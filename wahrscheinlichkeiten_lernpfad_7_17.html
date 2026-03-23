@@ -1,0 +1,2756 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lernpfad — Wahrscheinlichkeiten</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf6f0;--ink:#1a1612;--muted:#7a6f65;--border:#e0d8ce;--surface:#ffffff;
+  --grund-h:#1a4a8a;--grund-l:#e8f0fb;--grund-m:#8badd4;
+  --regeln-h:#c0392b;--regeln-l:#fbe8e6;--regeln-m:#d98a82;
+  --mitz-h:#1a6b4a;--mitz-l:#e6f5ee;--mitz-m:#7dbfa0;
+  --ohnez-h:#6a3d9a;--ohnez-l:#f0e8f7;--ohnez-m:#b08fd6;
+  --anwend-h:#b8860b;--anwend-l:#faf3e0;--anwend-m:#d4b96a;
+  --monty-h:#2d7d7a;--monty-l:#e6f3f3;--monty-m:#7dbcba;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.04;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px 60px}
+.kompband{background:#1a1612;color:#fff;text-align:center;padding:12px 16px;font-size:clamp(.8rem,1.5vw,.95rem);letter-spacing:.08em;font-weight:600}
+
+/* Views */
+.view{display:none}.view.active{display:block}
+
+/* Map Header */
+.map-header{text-align:center;padding:48px 0 32px}
+.map-header .eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.8rem;color:var(--muted);margin-bottom:8px}
+.map-header h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2rem,5vw,3rem);line-height:1.15;margin-bottom:12px}
+.map-header h1 em{font-style:italic;font-weight:400}
+.map-header .desc{color:var(--muted);max-width:560px;margin:0 auto;font-size:.95rem}
+
+/* Progress Strip */
+.progress-strip{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:16px 0 32px}
+.ps-badge{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--surface);border:2px solid var(--border);transition:.2s}
+.ps-badge.done{border-color:currentColor;background:currentColor;color:#fff!important}
+.ps-badge.done .ps-label{color:#fff}
+.ps-badge .ps-dot{width:8px;height:8px;border-radius:50%;border:2px solid currentColor;flex-shrink:0}
+.ps-badge.done .ps-dot{background:#fff;border-color:#fff}
+
+/* Islands Grid */
+.islands-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:32px}
+@media(max-width:640px){.islands-grid{grid-template-columns:1fr}}
+.island-card{background:var(--surface);border-radius:24px;padding:28px 24px;border:2px solid var(--border);cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+.island-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.island-icon{font-size:2rem;margin-bottom:8px}
+.island-tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:600;margin-bottom:10px}
+.island-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.15rem;line-height:1.3;margin-bottom:6px;white-space:pre-line}
+.island-desc{color:var(--muted);font-size:.85rem;margin-bottom:14px}
+.island-pips{display:flex;gap:6px;margin-bottom:14px}
+.step-pip{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);transition:.2s}
+.step-pip.filled{border-color:currentColor;background:currentColor}
+.island-cta{font-weight:600;font-size:.85rem;display:inline-flex;align-items:center;gap:4px}
+
+/* Quiz Card */
+.quiz-card{background:var(--surface);border-radius:24px;padding:32px;border:2px solid var(--anwend-m);text-align:center;margin-bottom:32px;cursor:pointer;transition:.25s}
+.quiz-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.quiz-card .qc-icon{font-size:2.5rem;margin-bottom:8px}
+.quiz-card h3{font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem;margin-bottom:6px}
+.quiz-card .qc-status{color:var(--muted);font-size:.85rem}
+
+/* Lesson View */
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:12px 0;font-size:.85rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none}
+.back-btn:hover{color:var(--ink)}
+.lesson-header{border-radius:20px;padding:32px 28px;margin-bottom:24px;text-align:center}
+.lesson-header .lh-emoji{font-size:2.2rem}
+.lesson-header .lh-tag{display:inline-block;padding:3px 12px;border-radius:999px;font-size:.72rem;font-weight:600;background:rgba(255,255,255,.25);color:#fff;margin:8px 0}
+.lesson-header h2{font-family:'Fraunces',serif;font-weight:900;color:#fff;font-size:clamp(1.4rem,3vw,1.8rem);line-height:1.2}
+.lesson-header .lh-sub{color:rgba(255,255,255,.8);font-size:.88rem;margin-top:6px}
+
+/* Step Pills */
+.step-pills{display:flex;justify-content:center;gap:10px;margin-bottom:28px}
+.step-pill{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--border);transition:.2s}
+.step-pill.active{transform:scale(1.3)}
+.step-pill.done{border-color:currentColor;background:currentColor}
+
+/* Theory Block */
+.theory-block{background:var(--surface);border-radius:16px;padding:24px;margin-bottom:16px;border:1.5px solid var(--border)}
+.theory-block .tb-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.theory-block .tb-icon{font-size:1.4rem}
+.theory-block .tb-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem}
+.theory-block .tb-text{font-size:.9rem;color:var(--ink);line-height:1.7}
+.theory-block .tb-text strong{font-weight:600}
+.theory-block pre{white-space:pre;font-family:'Courier New',Courier,monospace}
+.theory-items{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.theory-item{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;padding:8px 12px;border-radius:10px;background:var(--bg)}
+.theory-item .ti-icon{flex-shrink:0;font-size:1rem}
+
+/* Interactive */
+.interactive-area{background:var(--surface);border-radius:16px;padding:28px;border:1.5px solid var(--border);margin-bottom:16px}
+.interactive-area h3{font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;margin-bottom:4px}
+.interactive-area .ia-sub{color:var(--muted);font-size:.88rem;margin-bottom:18px}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.chip{padding:10px 18px;border-radius:12px;border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:.88rem;font-weight:500;transition:.2s}
+.chip:hover{border-color:var(--muted)}
+.chip.correct{border-color:#27ae60;background:#e8f8ef;color:#1a6b4a;cursor:default}
+.chip.wrong{border-color:#c0392b;background:#fbe8e6;color:#c0392b;cursor:default;opacity:.6}
+.chip.picked{pointer-events:none}
+.explainer-box{padding:16px;border-radius:12px;background:#e8f8ef;border:1.5px solid #27ae60;font-size:.88rem;color:#1a6b4a;display:none}
+.explainer-box.show{display:block}
+
+/* Mini-Quiz */
+.mini-quiz-q{background:var(--surface);border-radius:16px;padding:24px;border:1.5px solid var(--border);margin-bottom:16px}
+.mini-quiz-q .mq-text{font-weight:600;font-size:.95rem;margin-bottom:14px}
+.mq-opts{display:flex;flex-direction:column;gap:8px}
+.mq-opt{padding:12px 16px;border-radius:12px;border:2px solid var(--border);cursor:pointer;font-size:.88rem;transition:.15s}
+.mq-opt:hover{border-color:var(--muted)}
+.mq-opt.chosen-ok{border-color:#27ae60;background:#e8f8ef}
+.mq-opt.chosen-fail{border-color:#c0392b;background:#fbe8e6}
+.mq-opt.disabled{pointer-events:none;opacity:.5}
+.mq-feedback{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:.84rem;display:none}
+.mq-feedback.show{display:block}
+.mq-feedback.ok{background:#e8f8ef;color:#1a6b4a}
+.mq-feedback.fail{background:#fbe8e6;color:#c0392b}
+
+/* Buttons */
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:14px 28px;border-radius:14px;border:none;font-size:.9rem;font-weight:600;color:#fff;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.btn-primary:disabled{opacity:.4;pointer-events:none}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;border-radius:14px;border:2px solid var(--border);background:var(--surface);font-size:.85rem;font-weight:500;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif;color:var(--ink)}
+.btn-secondary:hover{border-color:var(--muted)}
+.step-label{text-align:center;font-size:.78rem;color:var(--muted);font-weight:500;margin-bottom:16px;letter-spacing:.06em;text-transform:uppercase}
+.step-nav{text-align:center;margin-top:24px}
+
+/* Final Quiz */
+.fq-header{text-align:center;padding:32px 0 24px}
+.fq-header h2{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.6rem,4vw,2.2rem)}
+.fq-header .fq-sub{color:var(--muted);font-size:.9rem;margin-top:6px}
+.fq-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.fq-badge{padding:4px 12px;border-radius:999px;font-size:.72rem;font-weight:600}
+.fq-card{background:var(--surface);border-radius:16px;padding:24px;margin-bottom:16px;border:1.5px solid var(--border)}
+.fq-card .fq-scale-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.68rem;font-weight:600;margin-bottom:10px}
+.fq-card .fq-q{font-weight:600;font-size:.93rem;margin-bottom:14px;line-height:1.5}
+.fq-card .fq-q pre{font-weight:400}
+.fq-opts{display:flex;flex-direction:column;gap:8px}
+.fq-opt{padding:12px 16px;border-radius:12px;border:2px solid var(--border);cursor:pointer;font-size:.86rem;transition:.15s}
+.fq-opt:hover{border-color:var(--muted)}
+.fq-opt.chosen-ok{border-color:#27ae60;background:#e8f8ef}
+.fq-opt.chosen-fail{border-color:#c0392b;background:#fbe8e6}
+.fq-opt.disabled{pointer-events:none;opacity:.5}
+.fq-opt.reveal-correct{border-color:#27ae60;background:#e8f8ef}
+.fq-feedback{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:.82rem;display:none}
+.fq-feedback.show{display:block}
+.fq-feedback.ok{background:#e8f8ef;color:#1a6b4a}
+.fq-feedback.fail{background:#fbe8e6;color:#c0392b}
+.fq-theorylink{display:inline-block;margin-top:8px;font-size:.8rem;color:var(--muted);cursor:pointer}
+.fq-theorylink:hover{color:var(--ink)}
+.fq-blank-input{padding:10px 16px;border-radius:10px;border:2px solid var(--border);font-size:.9rem;font-family:'DM Sans',sans-serif;width:100%;max-width:300px}
+.fq-blank-btn{margin-top:8px}
+.fq-multi-opt{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;border:2px solid var(--border);cursor:pointer;font-size:.86rem;transition:.15s}
+.fq-multi-opt:hover{border-color:var(--muted)}
+.fq-multi-opt.selected{border-color:#1a4a8a;background:#e8f0fb}
+.fq-multi-opt.disabled{pointer-events:none}
+.fq-multi-opt.reveal-correct{border-color:#27ae60;background:#e8f8ef}
+.fq-multi-opt.reveal-wrong{border-color:#c0392b;background:#fbe8e6}
+.fq-tf-opts{display:flex;gap:12px}
+.fq-tf-opt{flex:1;padding:14px;border-radius:12px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:.9rem;font-weight:600;transition:.15s}
+.fq-tf-opt:hover{border-color:var(--muted)}
+.fq-tf-opt.chosen-ok{border-color:#27ae60;background:#e8f8ef}
+.fq-tf-opt.chosen-fail{border-color:#c0392b;background:#fbe8e6}
+.fq-tf-opt.disabled{pointer-events:none;opacity:.5}
+.fq-tf-opt.reveal-correct{border-color:#27ae60;background:#e8f8ef}
+
+/* Quiz Result */
+.quiz-result{text-align:center;background:var(--surface);border-radius:20px;padding:40px 28px;border:2px solid var(--border);margin-top:24px;display:none}
+.quiz-result.show{display:block}
+.qr-emoji{font-size:3rem}
+.qr-score{font-family:'Fraunces',serif;font-weight:900;font-size:2.4rem;margin:8px 0}
+.qr-label{font-weight:600;font-size:1.1rem;margin-bottom:6px}
+.qr-msg{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+.qr-breakdown{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px}
+.qr-bd-item{padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600}
+.qr-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* Back-to-quiz Banner */
+.back-to-quiz-banner{background:#fef3cd;border:2px solid #f0c040;border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;font-size:.85rem;cursor:pointer}
+.back-to-quiz-banner:hover{background:#fde68a}
+
+/* Vertiefung Section Header */
+.vert-section-title{text-align:center;padding:48px 0 24px;font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.4rem,3vw,1.8rem);color:var(--ink)}
+.vert-section-desc{text-align:center;color:var(--muted);font-size:.9rem;max-width:520px;margin:0 auto 28px}
+.vert-card{background:var(--surface);border-radius:24px;padding:28px 24px;border:2px solid var(--border);cursor:pointer;transition:.25s;margin-bottom:16px}
+.vert-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.vert-card .vert-badge{display:inline-block;padding:3px 12px;border-radius:999px;font-size:.7rem;font-weight:600;margin-bottom:10px}
+.vert-card .vert-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;margin-bottom:6px}
+.vert-card .vert-desc{color:var(--muted);font-size:.85rem;margin-bottom:14px}
+.vert-card .vert-cta{font-weight:600;font-size:.85rem;display:inline-flex;align-items:center;gap:4px}
+
+/* Guided Exercise View */
+.ex-container{background:var(--surface);border-radius:20px;padding:32px 28px;border:1.5px solid var(--border);margin-bottom:20px}
+.ex-container h3{font-family:'Fraunces',serif;font-weight:700;font-size:1.15rem;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.ex-intro{font-size:.9rem;line-height:1.7;margin-bottom:20px}
+.ex-intro strong{font-weight:600}
+
+/* Reveal button + content */
+.reveal-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:14px;border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:.85rem;font-weight:600;transition:.2s;font-family:'DM Sans',sans-serif;color:var(--ink);margin-bottom:12px}
+.reveal-btn:hover{border-color:var(--muted);background:var(--bg)}
+.reveal-btn.open{background:var(--bg);border-color:var(--muted)}
+.reveal-content{display:none;padding:16px;border-radius:14px;background:var(--bg);margin-bottom:16px;font-size:.88rem;line-height:1.7}
+.reveal-content.show{display:block;animation:riseIn .3s ease both}
+.reveal-content pre{font-family:'Courier New',monospace;font-size:.82rem;line-height:1.6;white-space:pre;overflow-x:auto;background:#1a1612;color:#e8f0fb;padding:16px;border-radius:12px;margin:12px 0}
+
+/* MC Choice inline */
+.ex-mc{margin:16px 0}
+.ex-mc .ex-mc-label{font-weight:600;font-size:.9rem;margin-bottom:10px}
+.ex-mc-opts{display:flex;flex-direction:column;gap:8px}
+.ex-mc-opt{padding:12px 16px;border-radius:12px;border:2px solid var(--border);cursor:pointer;font-size:.86rem;transition:.15s}
+.ex-mc-opt:hover{border-color:var(--muted)}
+.ex-mc-opt.picked{pointer-events:none}
+.ex-mc-opt.mc-ok{border-color:#27ae60;background:#e8f8ef;pointer-events:none}
+.ex-mc-opt.mc-fail{border-color:#c0392b;background:#fbe8e6;pointer-events:none;opacity:.6}
+.ex-mc-feedback{margin-top:10px;padding:12px 16px;border-radius:12px;font-size:.85rem;display:none}
+.ex-mc-feedback.show{display:block}
+.ex-mc-feedback.ok{background:#e8f8ef;color:#1a6b4a}
+.ex-mc-feedback.fail{background:#fbe8e6;color:#c0392b}
+
+/* Aha Box */
+.aha-box{background:linear-gradient(135deg,#fff8e1 0%,#fff3cd 100%);border:2px solid #f0c040;border-radius:16px;padding:24px;margin:20px 0}
+.aha-box h4{font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.aha-box p,.aha-box li{font-size:.88rem;line-height:1.7}
+.aha-box ul{list-style:none;padding:0;margin:10px 0}
+.aha-box li{padding:4px 0;display:flex;align-items:flex-start;gap:8px}
+.aha-box li::before{content:'';display:none}
+
+/* Sheep viz */
+.sheep-grid{display:flex;flex-wrap:wrap;gap:3px;margin:16px 0;padding:16px;background:#f5f0e8;border-radius:12px}
+.sheep{width:18px;height:18px;border-radius:4px;transition:.3s}
+.sheep.healthy-neg{background:#c8e6c9}
+.sheep.healthy-pos{background:#ffcc02}
+.sheep.infected-pos{background:#e53935}
+.sheep.infected-neg{background:#ff8a65}
+.sheep-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:.78rem}
+.sheep-legend span{display:flex;align-items:center;gap:5px}
+.sheep-legend .dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+/* Tree anim */
+.tree-step{opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease}
+.tree-step.visible{opacity:1;transform:translateY(0)}
+
+/* Risk sliders */
+.risk-slider-row{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;transition:.2s}
+.risk-slider-row:hover{border-color:var(--mitz-m)}
+.risk-slider-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:600;font-size:.88rem}
+.risk-slider-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.risk-slider-controls input[type=range]{flex:1;min-width:120px;accent-color:var(--mitz-h)}
+.risk-slider-pct{font-weight:700;font-size:.85rem;color:var(--mitz-h);min-width:50px;text-align:right}
+.risk-slider-result{font-size:.82rem;padding:10px 14px;background:var(--mitz-l);border-radius:10px;line-height:1.6}
+.risk-slider-result strong{color:var(--mitz-h)}
+
+/* Nine lifts viz */
+.nl-shaft{position:relative;width:68px;height:200px;background:linear-gradient(180deg,#f0e8f7,#e6dff0);border-radius:10px;border:1.5px solid var(--ohnez-m);overflow:hidden;flex-shrink:0}
+.nl-shaft .nl-floor-line{position:absolute;left:0;right:0;height:1px;background:var(--ohnez-m);opacity:.25}
+.nl-shaft .nl-cabin{position:absolute;right:6px;width:24px;height:28px;background:var(--ohnez-h);border-radius:5px;transition:top .5s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;font-size:.7rem}
+.nl-shaft.lands1 .nl-cabin{background:#1a6b4a}
+.nl-shaft.lands1{border-color:#1a6b4a;background:linear-gradient(180deg,#e6f5ee,#ddeee5)}
+.nl-shaft.lands3{border-color:var(--muted)}
+.nl-label{text-align:center;font-size:.65rem;font-weight:700;margin-top:4px;color:var(--muted)}
+.nl-label.lands1{color:#1a6b4a}
+.nl-prob{text-align:center;font-size:.6rem;color:var(--muted);margin-top:2px}
+
+/* Animations */
+@keyframes riseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.rise{animation:riseIn .4s ease both}
+.rise-d1{animation-delay:.05s}.rise-d2{animation-delay:.1s}.rise-d3{animation-delay:.15s}.rise-d4{animation-delay:.2s}.rise-d5{animation-delay:.25s}
+</style>
+</head>
+<body>
+<div class="kompband">E — 🎲 Wahrscheinlichkeiten</div>
+
+<!-- VIEW: MAP -->
+<div id="view-map" class="view active">
+<div class="wrap">
+  <div class="map-header">
+    <div class="eyebrow">Modul M03</div>
+    <h1>Gesetze der <em>Wahrscheinlichkeit</em></h1>
+    <p class="desc">Von den Grundregeln über Baumdiagramme bis hin zum berühmten Monty-Hall-Problem — entdecke die Welt der Wahrscheinlichkeiten Schritt für Schritt.</p>
+  </div>
+  <div class="progress-strip" id="progress-strip"></div>
+  <div class="islands-grid" id="islands-grid"></div>
+  <div class="quiz-card" id="quiz-card" onclick="openFinalQuiz()">
+    <div class="qc-icon">🏆</div>
+    <h3>Abschlussquiz</h3>
+    <p class="qc-status" id="qc-status">⚡ Verfügbar · 0/6 Inseln abgeschlossen</p>
+  </div>
+
+  <!-- Vertiefungsaufgaben -->
+  <div class="vert-section-title">🔬 Vertiefungsaufgaben</div>
+  <p class="vert-section-desc">Anspruchsvollere Aufgaben zum Erkunden — Schritt für Schritt geführt.</p>
+
+  <div class="vert-card" onclick="openExercise('virus')" style="border-color:var(--anwend-m)">
+    <div class="vert-badge" style="background:var(--anwend-l);color:var(--anwend-h)">Bedingte Wahrscheinlichkeit</div>
+    <div class="vert-title">🐑 Virustest bei Schafen — Die Falsch-Positiv-Falle</div>
+    <div class="vert-desc">Ein Schnelltest ist zu 85% korrekt bei infizierten Schafen, aber 5% der gesunden testen falsch positiv. Was bedeutet ein positives Ergebnis wirklich?</div>
+    <div class="vert-cta" style="color:var(--anwend-h)">Erkunden →</div>
+  </div>
+
+  <div class="vert-card" onclick="openExercise('lift')" style="border-color:var(--ohnez-m)">
+    <div class="vert-badge" style="background:var(--ohnez-l);color:var(--ohnez-h)">Mehrstufige Prozesse</div>
+    <div class="vert-title">🛗 Der unberechenbare Aufzug</div>
+    <div class="vert-desc">Ein Aufzug fährt nach bestimmten Wahrscheinlichkeitsregeln zwischen 5 Stockwerken. Wo hält er als nächstes? Verfolge seine Reise Schritt für Schritt.</div>
+    <div class="vert-cta" style="color:var(--ohnez-h)">Erkunden →</div>
+  </div>
+
+  <div class="vert-card" onclick="openExercise('birthday')" style="border-color:var(--regeln-m)">
+    <div class="vert-badge" style="background:var(--regeln-l);color:var(--regeln-h)">Kombinatorik</div>
+    <div class="vert-title">🎂 Das Geburtstagsproblem</div>
+    <div class="vert-desc">Wie viele Personen braucht es in einem Raum, damit die Chance auf einen gemeinsamen Geburtstag über 50% liegt? Die Antwort überrascht!</div>
+    <div class="vert-cta" style="color:var(--regeln-h)">Erkunden →</div>
+  </div>
+
+  <div class="vert-card" onclick="openExercise('risk')" style="border-color:var(--mitz-m)">
+    <div class="vert-badge" style="background:var(--mitz-l);color:var(--mitz-h)">Risiko & Statistik</div>
+    <div class="vert-title">☠️ Wie gefährlich ist das wirklich?</div>
+    <div class="vert-desc">Klettern, Rauchen, Blitzschlag, Meteorit — eine Tabelle voller Todesrisiken. Kannst du sie richtig einordnen? Und was bedeuten die Zahlen wirklich?</div>
+    <div class="vert-cta" style="color:var(--mitz-h)">Erkunden →</div>
+  </div>
+
+</div>
+</div>
+
+<!-- VIEW: EXERCISE VIRUS -->
+<div id="view-exercise-virus" class="view">
+<div class="wrap">
+  <button class="back-btn" onclick="goToMap()">← Zurück zur Karte</button>
+
+  <div class="lesson-header" style="background:var(--anwend-h)">
+    <div class="lh-emoji">🐑</div>
+    <div class="lh-tag">Vertiefungsaufgabe</div>
+    <h2>Virustest bei Schafen</h2>
+    <div class="lh-sub">Die Falsch-Positiv-Falle verstehen</div>
+  </div>
+
+  <!-- SITUATION -->
+  <div class="ex-container rise">
+    <h3>📋 Ausgangslage</h3>
+    <div class="ex-intro">
+      In einer Schafherde ist <strong>1 von 250 Schafen</strong> mit einem Virus infiziert.<br><br>
+      Um das Virus zu erkennen, wird bei jedem Schaf ein <strong>Schnelltest</strong> durchgeführt. Der Test ist aber nicht perfekt:
+    </div>
+    <div class="theory-items">
+      <div class="theory-item"><span class="ti-icon">🦠</span><span>Ein <strong>infiziertes</strong> Schaf testet in <strong>85%</strong> der Fälle positiv (Sensitivität)</span></div>
+      <div class="theory-item"><span class="ti-icon">✅</span><span>Ein <strong>gesundes</strong> Schaf testet in <strong>5%</strong> der Fälle fälschlicherweise positiv (Falsch-Positiv-Rate)</span></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: TREE DIAGRAM -->
+  <div class="ex-container rise rise-d1">
+    <h3>🌳 Schritt 1 — Das Baumdiagramm aufbauen</h3>
+    <div class="ex-intro">
+      Zuerst teilen wir alle Schafe in zwei Gruppen: infiziert und gesund. Dann schauen wir, wie der Test bei jeder Gruppe ausfällt.
+    </div>
+
+    <button class="reveal-btn" onclick="toggleReveal('tree1')">
+      🔍 Erste Verzweigung anzeigen
+    </button>
+    <div class="reveal-content" id="tree1">
+      <strong>Stufe 1: Infiziert oder gesund?</strong>
+      <pre>Start
+ ├─ Infiziert  (1/250 = 0.004)
+ └─ Gesund     (249/250 = 0.996)</pre>
+      Von 250 Schafen ist im Schnitt <strong>1 infiziert</strong> und <strong>249 sind gesund</strong>.
+    </div>
+
+    <button class="reveal-btn" onclick="toggleReveal('tree2')">
+      🔍 Vollständiges Baumdiagramm anzeigen
+    </button>
+    <div class="reveal-content" id="tree2">
+      <strong>Stufe 2: Wie testet jede Gruppe?</strong>
+      <pre>Start
+ ├─ Infiziert (0.004)
+ │    ├─ Test + (0.85)  → 0.004 × 0.85 = <strong style="color:#e53935">0.0034</strong>
+ │    └─ Test − (0.15)  → 0.004 × 0.15 = <strong style="color:#ff8a65">0.0006</strong>
+ └─ Gesund (0.996)
+      ├─ Test + (0.05)  → 0.996 × 0.05 = <strong style="color:#ffcc02">0.0498</strong>
+      └─ Test − (0.95)  → 0.996 × 0.95 = <strong style="color:#81c784">0.9462</strong></pre>
+      <div style="margin-top:8px">
+        <strong>Kontrolle (Astregel):</strong> 0.0034 + 0.0006 + 0.0498 + 0.9462 = <strong>1.0000 ✓</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: QUESTIONS A-C -->
+  <div class="ex-container rise rise-d2">
+    <h3>📝 Schritt 2 — Aufgaben A bis C</h3>
+
+    <div class="ex-mc" id="ex-mc-a">
+      <div class="ex-mc-label">A) Wie gross ist die Wahrscheinlichkeit, dass ein Schaf infiziert ist UND positiv testet?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('a',this,0)">0.85</div>
+        <div class="ex-mc-opt" onclick="checkExMC('a',this,1)">0.0034</div>
+        <div class="ex-mc-opt" onclick="checkExMC('a',this,2)">0.05</div>
+        <div class="ex-mc-opt" onclick="checkExMC('a',this,3)">0.004</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-a"></div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-b">
+      <div class="ex-mc-label">B) Wie gross ist die Wahrscheinlichkeit, dass ein Schaf infiziert ist, aber NEGATIV testet?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('b',this,0)">0.15</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b',this,1)">0.0006</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b',this,2)">0.004</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b',this,3)">0.0498</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-b"></div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-c">
+      <div class="ex-mc-label">C) Wie gross ist die Wahrscheinlichkeit, dass ein Schaf positiv testet (egal ob infiziert oder nicht)?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('c',this,0)">0.0034</div>
+        <div class="ex-mc-opt" onclick="checkExMC('c',this,1)">0.0498</div>
+        <div class="ex-mc-opt" onclick="checkExMC('c',this,2)">0.0532</div>
+        <div class="ex-mc-opt" onclick="checkExMC('c',this,3)">0.85</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-c"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: THE AHA MOMENT -->
+  <div class="ex-container rise rise-d3" id="aha-section" style="display:none">
+    <h3>💡 Schritt 3 — Das überraschende Ergebnis</h3>
+    <div class="ex-intro">
+      Jetzt kommt die entscheidende Frage: <strong>Wenn ein Schaf positiv testet, wie wahrscheinlich ist es WIRKLICH infiziert?</strong>
+    </div>
+
+    <div class="aha-box">
+      <h4>🤯 Die Falsch-Positiv-Falle</h4>
+      <p>Stellen wir uns <strong>10'000 Schafe</strong> vor und rechnen mit konkreten Zahlen:</p>
+      <ul>
+        <li><span style="font-size:1.1em">🦠</span> <span><strong>40 Schafe</strong> sind infiziert (10'000 ÷ 250)</span></li>
+        <li><span style="font-size:1.1em">✅</span> <span><strong>9'960 Schafe</strong> sind gesund</span></li>
+      </ul>
+      <p style="margin-top:12px"><strong>Wie testet jede Gruppe?</strong></p>
+      <ul>
+        <li><span style="color:#e53935;font-weight:700">●</span> <span>Von 40 infizierten: <strong>34 testen positiv</strong> (85% von 40)</span></li>
+        <li><span style="color:#ff8a65;font-weight:700">●</span> <span>Von 40 infizierten: 6 testen negativ (15% von 40)</span></li>
+        <li><span style="color:#ffcc02;font-weight:700">●</span> <span>Von 9'960 gesunden: <strong>498 testen positiv!</strong> (5% von 9'960)</span></li>
+        <li><span style="color:#81c784;font-weight:700">●</span> <span>Von 9'960 gesunden: 9'462 testen negativ</span></li>
+      </ul>
+      <p style="margin-top:16px;padding:14px;background:rgba(255,255,255,.6);border-radius:10px;font-weight:600">
+        Insgesamt testen <strong>34 + 498 = 532 Schafe positiv</strong>.<br>
+        Aber nur <strong>34 von diesen 532</strong> sind wirklich krank!<br><br>
+        → <strong style="font-size:1.15em;color:#c0392b">p(infiziert | positiv) = 34 / 532 ≈ 6.4%</strong>
+      </p>
+      <p style="margin-top:12px">Das heisst: <strong>Über 93% der positiv getesteten Schafe sind in Wirklichkeit gesund!</strong> Der Test ist zwar "gut" (85% Sensitivität), aber weil das Virus so selten ist, überwiegen die falsch-positiven Ergebnisse massiv.</p>
+    </div>
+
+    <!-- Sheep visualization -->
+    <div style="margin-top:20px">
+      <strong style="font-size:.9rem">Visualisierung: 500 Schafe getestet</strong>
+      <div class="sheep-grid" id="sheep-grid"></div>
+      <div class="sheep-legend">
+        <span><span class="dot" style="background:#81c784"></span> Gesund, Test negativ (473)</span>
+        <span><span class="dot" style="background:#ffcc02"></span> Gesund, Test positiv (25)</span>
+        <span><span class="dot" style="background:#e53935"></span> Infiziert, Test positiv (2)</span>
+        <span><span class="dot" style="background:#ff8a65"></span> Infiziert, Test negativ (0–1)</span>
+      </div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-d" style="margin-top:24px">
+      <div class="ex-mc-label">Abschlussfrage: Ein Schaf testet positiv. Was ist der sinnvollste nächste Schritt?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('d',this,0)">Sofort behandeln — der Test ist ja positiv</div>
+        <div class="ex-mc-opt" onclick="checkExMC('d',this,1)">Einen zweiten, unabhängigen Test durchführen</div>
+        <div class="ex-mc-opt" onclick="checkExMC('d',this,2)">Den Test ignorieren — er ist zu ungenau</div>
+        <div class="ex-mc-opt" onclick="checkExMC('d',this,3)">Alle Schafe sicherheitshalber behandeln</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-d"></div>
+    </div>
+  </div>
+
+  <!-- STEP 4: WHY THIS MATTERS + BAYES -->
+  <div class="ex-container rise rise-d4" id="why-section" style="display:none">
+    <h3>🧮 Schritt 4 — Der Satz von Bayes erklärt</h3>
+    <div class="ex-intro">
+      Was wir gerade mit den 10'000 Schafen gerechnet haben, lässt sich als <strong>allgemeine Formel</strong> schreiben — den <strong>Satz von Bayes</strong>. Er beantwortet die Frage: <em>Wie wahrscheinlich ist eine Ursache, wenn ich ein bestimmtes Ergebnis beobachte?</em>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--anwend-m)">
+      <div class="tb-head"><span class="tb-icon">📐</span><span class="tb-title">Die Bayes-Formel</span></div>
+      <div class="tb-text">
+        <pre style="background:#1a1612;color:#faf3e0;padding:20px;border-radius:12px;font-size:.85rem;line-height:1.8">                    p(B | A) × p(A)
+  p(A | B)  =  ─────────────────────
+                      p(B)</pre>
+        <div style="margin-top:16px">
+          <strong>Was bedeuten die Symbole?</strong>
+        </div>
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">🎯</span><span><strong>p(A | B)</strong> = "Wie wahrscheinlich ist A, <em>wenn</em> B eingetreten ist?"<br>→ A = infiziert, B = Test positiv<br>→ <strong>p(infiziert | Test positiv)</strong> — das haben wir oben mit <strong style="color:#c0392b">6.4%</strong> berechnet</span></div>
+        <div class="theory-item"><span class="ti-icon">🔬</span><span><strong>p(B | A)</strong> = "Wie wahrscheinlich ist B, wenn A stimmt?"<br>→ B = Test positiv, A = infiziert<br>→ <strong>p(Test positiv | infiziert) = 0.85</strong> — die Sensitivität des Tests (aus der Aufgabenstellung)</span></div>
+        <div class="theory-item"><span class="ti-icon">📊</span><span><strong>p(A)</strong> = "Wie häufig ist A insgesamt?"<br>→ A = infiziert<br>→ <strong>p(infiziert) = 1/250 = 0.004</strong> — die Häufigkeit des Virus in der Herde (Prävalenz)</span></div>
+        <div class="theory-item"><span class="ti-icon">📋</span><span><strong>p(B)</strong> = "Wie häufig tritt B insgesamt auf?"<br>→ B = Test positiv<br>→ <strong>p(Test positiv) = 0.0532</strong> — aus Aufgabe C (beide Pfade zu "positiv" addiert)</span></div>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--anwend-m);margin-top:16px">
+      <div class="tb-head"><span class="tb-icon">🧮</span><span class="tb-title">Eingesetzt für unser Schafe-Beispiel</span></div>
+      <div class="tb-text">
+        <pre style="background:#1a1612;color:#faf3e0;padding:20px;border-radius:12px;font-size:.85rem;line-height:1.8">                     p(+|infiziert) × p(infiziert)
+p(infiziert|+)  =  ───────────────────────────────
+                            p(+)
+
+                     0.85  ×  0.004
+                =  ─────────────────
+                       0.0532
+
+                     0.0034
+                =  ─────────
+                    0.0532
+
+                ≈  <strong style="color:#d4b96a">0.064  =  6.4%</strong></pre>
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">💡</span><span>Der <strong>Zähler</strong> (0.0034) ist der Pfad "infiziert UND positiv" aus dem Baumdiagramm — genau Aufgabe A!</span></div>
+        <div class="theory-item"><span class="ti-icon">💡</span><span>Der <strong>Nenner</strong> (0.0532) ist die Gesamtwahrscheinlichkeit für "positiv" — genau Aufgabe C!</span></div>
+        <div class="theory-item"><span class="ti-icon">🔑</span><span>Bayes sagt also: <strong>Von allen positiven Ergebnissen, welcher Anteil kommt von den wirklich Infizierten?</strong></span></div>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--anwend-m);margin-top:16px">
+      <div class="tb-head"><span class="tb-icon">🏥</span><span class="tb-title">Warum ist das wichtig im Alltag?</span></div>
+      <div class="tb-text">
+        Dieses Phänomen betrifft nicht nur Schafe — es ist ein <strong>grundlegendes Problem aller medizinischen Tests</strong>.
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">1️⃣</span><span><strong>Seltene Krankheit + Test = viele falsche Alarme.</strong> Je seltener die Krankheit, desto mehr falsch-positive Ergebnisse. Bei 1/250 Häufigkeit und 5% Falsch-Positiv-Rate kommen auf jeden Kranken fast 15 Fehlalarme.</span></div>
+        <div class="theory-item"><span class="ti-icon">2️⃣</span><span><strong>Positiver Test ≠ sicher krank.</strong> Deshalb gibt es fast immer einen Bestätigungstest. Der erste Schnelltest ist nur eine Vorauswahl.</span></div>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--anwend-m);margin-top:16px">
+      <div class="tb-head"><span class="tb-icon">🔄</span><span class="tb-title">Gegenbeispiel: Was wenn das Virus häufiger wäre?</span></div>
+      <div class="tb-text">
+        Stell dir vor, <strong>1 von 5</strong> Schafen wäre infiziert (statt 1 von 250). Der Test bleibt genau gleich (85% Sensitivität, 5% Falsch-Positiv). Was ändert sich?
+        <pre style="background:#1a1612;color:#faf3e0;padding:20px;border-radius:12px;font-size:.85rem;line-height:1.8;margin-top:12px"><strong style="color:#d4b96a">Neues Baumdiagramm (1 von 5 infiziert):</strong>
+
+Start
+ ├─ Infiziert (1/5 = 0.20)          <span style="color:#7a6f65">← vorher: 1/250 = 0.004</span>
+ │    ├─ Test + (0.85)  → 0.20 × 0.85 = <strong style="color:#e53935">0.170</strong>   <span style="color:#7a6f65">← vorher: 0.0034</span>
+ │    └─ Test − (0.15)  → 0.20 × 0.15 = 0.030   <span style="color:#7a6f65">← vorher: 0.0006</span>
+ └─ Gesund (4/5 = 0.80)             <span style="color:#7a6f65">← vorher: 249/250 = 0.996</span>
+      ├─ Test + (0.05)  → 0.80 × 0.05 = <strong style="color:#ffcc02">0.040</strong>   <span style="color:#7a6f65">← vorher: 0.0498</span>
+      └─ Test − (0.95)  → 0.80 × 0.95 = 0.760   <span style="color:#7a6f65">← vorher: 0.9462</span>
+
+p(positiv) = 0.170 + 0.040 = <strong>0.210</strong>            <span style="color:#7a6f65">← vorher: 0.0532</span></pre>
+        <pre style="background:#1a1612;color:#faf3e0;padding:20px;border-radius:12px;font-size:.85rem;line-height:1.8;margin-top:8px"><strong style="color:#d4b96a">Bayes einsetzen:</strong>
+
+                     0.85  ×  0.20      0.170
+p(infiziert|+)  =  ──────────────── = ─────── ≈ <strong style="color:#7dbfa0">0.81 = 81%</strong>   <span style="color:#7a6f65">← vorher: 6.4%</span>
+                       0.210            0.210</pre>
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">📊</span><span><strong>Virus selten (1/250):</strong> Positiver Test → nur <strong style="color:#c0392b">6.4%</strong> Chance wirklich krank</span></div>
+        <div class="theory-item"><span class="ti-icon">📊</span><span><strong>Virus häufig (1/5):</strong> Positiver Test → ganze <strong style="color:#1a6b4a">81%</strong> Chance wirklich krank</span></div>
+        <div class="theory-item"><span class="ti-icon">🔑</span><span><strong>Gleicher Test, komplett anderes Ergebnis!</strong> Der entscheidende Faktor ist, wie häufig die Krankheit in der Herde vorkommt — die sogenannte <strong>Prävalenz</strong>.</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="step-nav" style="margin-top:24px">
+    <button class="btn-secondary" onclick="goToMap()">← Zurück zur Karte</button>
+  </div>
+
+</div>
+</div>
+
+<!-- VIEW: EXERCISE LIFT -->
+<div id="view-exercise-lift" class="view">
+<div class="wrap">
+  <button class="back-btn" onclick="goToMap()">← Zurück zur Karte</button>
+
+  <div class="lesson-header" style="background:var(--ohnez-h)">
+    <div class="lh-emoji">🛗</div>
+    <div class="lh-tag">Vertiefungsaufgabe</div>
+    <h2>Der unberechenbare Aufzug</h2>
+    <div class="lh-sub">Mehrstufige Wahrscheinlichkeitsprozesse erkunden</div>
+  </div>
+
+  <!-- SITUATION -->
+  <div class="ex-container rise">
+    <h3>📋 Ausgangslage</h3>
+    <div class="ex-intro">
+      Ein Bürogebäude hat <strong>5 Stockwerke</strong>: Erdgeschoss (EG), 1. Stock, 2. Stock, 3. Stock und 4. Stock. Alle sind durch einen Aufzug verbunden.
+    </div>
+    <div class="theory-items">
+      <div class="theory-item"><span class="ti-icon">⬆️</span><span>Fährt der Aufzug <strong>nach oben</strong> (und ist NICHT im 4. Stock): Wahrscheinlichkeit <strong>3/4</strong>, dass er weiter nach oben fährt; <strong>1/4</strong>, dass er die Richtung wechselt.</span></div>
+      <div class="theory-item"><span class="ti-icon">⬇️</span><span>Fährt der Aufzug <strong>nach unten</strong> (und ist NICHT im EG): Wahrscheinlichkeit <strong>1/4</strong>, dass er weiter nach unten fährt; <strong>3/4</strong>, dass er die Richtung wechselt.</span></div>
+      <div class="theory-item"><span class="ti-icon">🔄</span><span>Im <strong>4. Stock</strong> MUSS er nach unten. Im <strong>EG</strong> MUSS er nach oben.</span></div>
+      <div class="theory-item"><span class="ti-icon">🛗</span><span>Der Aufzug hält an <strong>jedem Stockwerk</strong>, das er passiert.</span></div>
+    </div>
+    <div style="margin-top:16px;padding:14px;background:var(--ohnez-l);border-radius:12px;font-size:.9rem">
+      <strong>Startposition:</strong> Der Aufzug befindet sich gerade im <strong>1. Stock</strong>, nachdem er <strong>nach unten</strong> gefahren ist.
+    </div>
+  </div>
+
+  <!-- ANIMATION -->
+  <div class="ex-container rise rise-d1">
+    <h3>🏢 Der Aufzugschacht — interaktiv</h3>
+    <div class="ex-intro">Klicke <strong>«Nächster Halt»</strong>, um den Aufzug Schritt für Schritt fahren zu lassen. Beobachte, welche Wahrscheinlichkeiten an jeder Verzweigung gelten.</div>
+
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+      <!-- Shaft -->
+      <div id="lift-shaft" style="position:relative;width:120px;height:340px;background:linear-gradient(180deg,#f0e8f7 0%,#e6dff0 100%);border-radius:16px;border:2px solid var(--ohnez-m);flex-shrink:0;overflow:hidden">
+        <!-- Floor labels -->
+        <div style="position:absolute;left:8px;top:10px;font-size:.72rem;font-weight:700;color:var(--ohnez-h)">4. Stock</div>
+        <div style="position:absolute;left:8px;top:78px;font-size:.72rem;font-weight:700;color:var(--ohnez-h)">3. Stock</div>
+        <div style="position:absolute;left:8px;top:146px;font-size:.72rem;font-weight:700;color:var(--ohnez-h)">2. Stock</div>
+        <div style="position:absolute;left:8px;top:214px;font-size:.72rem;font-weight:700;color:var(--ohnez-h)">1. Stock</div>
+        <div style="position:absolute;left:8px;top:282px;font-size:.72rem;font-weight:700;color:var(--ohnez-h)">EG</div>
+        <!-- Floor lines -->
+        <div style="position:absolute;left:0;right:0;top:66px;height:1px;background:var(--ohnez-m);opacity:.3"></div>
+        <div style="position:absolute;left:0;right:0;top:134px;height:1px;background:var(--ohnez-m);opacity:.3"></div>
+        <div style="position:absolute;left:0;right:0;top:202px;height:1px;background:var(--ohnez-m);opacity:.3"></div>
+        <div style="position:absolute;left:0;right:0;top:270px;height:1px;background:var(--ohnez-m);opacity:.3"></div>
+        <!-- Lift cabin -->
+        <div id="lift-cabin" style="position:absolute;right:12px;width:44px;height:52px;background:var(--ohnez-h);border-radius:8px;transition:top .6s cubic-bezier(.4,0,.2,1);top:206px;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:1.4rem">🛗</span>
+        </div>
+        <!-- Direction arrow -->
+        <div id="lift-arrow" style="position:absolute;right:62px;width:24px;height:24px;background:var(--ohnez-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--ohnez-h);transition:top .6s cubic-bezier(.4,0,.2,1);top:220px">↓</div>
+      </div>
+
+      <!-- Info panel -->
+      <div style="flex:1;min-width:240px">
+        <div id="lift-info" style="background:var(--surface);border-radius:14px;border:1.5px solid var(--border);padding:18px;margin-bottom:14px">
+          <div style="font-weight:600;font-size:.9rem;margin-bottom:8px" id="lift-status">Halt 0 — Startposition</div>
+          <div style="font-size:.85rem;color:var(--muted)" id="lift-detail">1. Stock, Richtung: ↓ abwärts</div>
+          <div style="font-size:.82rem;margin-top:10px;color:var(--ohnez-h);font-weight:600" id="lift-rule"></div>
+        </div>
+        <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-primary" style="background:var(--ohnez-h)" id="lift-next-btn" onclick="liftNextStop()">Nächster Halt →</button>
+          <button class="btn-secondary" onclick="liftReset()">⟲ Reset</button>
+        </div>
+        <div id="lift-log" style="background:var(--bg);border-radius:12px;padding:14px;font-size:.8rem;font-family:'Courier New',monospace;line-height:1.8;max-height:200px;overflow-y:auto;color:var(--ink)">
+          <span style="color:var(--ohnez-h);font-weight:700">Start:</span> 1. Stock ↓
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LONG-TERM SIMULATION -->
+  <div class="ex-container rise rise-d2">
+    <h3>📊 Langzeit-Simulation: Wo hält der Aufzug am häufigsten?</h3>
+    <div class="ex-intro">
+      Der Aufzug fährt nach oben mit P = 3/4 und nach unten mit nur P = 1/4. <strong>Wohin tendiert er langfristig?</strong> Lass ihn viele Male fahren und beobachte die Verteilung.
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px" id="sim-btns">
+      <button class="btn-primary" style="background:var(--ohnez-h)" onclick="runLiftSim(100)">100 Halte simulieren</button>
+      <button class="btn-primary" style="background:var(--ohnez-h)" onclick="runLiftSim(1000)">1'000 Halte</button>
+      <button class="btn-primary" style="background:var(--ohnez-h)" onclick="runLiftSim(10000)">10'000 Halte</button>
+      <button class="btn-secondary" onclick="resetLiftSim()">⟲ Reset</button>
+    </div>
+    <div id="sim-result" style="display:none">
+      <div id="sim-bars" style="display:flex;align-items:flex-end;gap:12px;padding:0 10px;margin-bottom:8px"></div>
+      <div id="sim-labels" style="display:flex;gap:12px;padding:0 10px"></div>
+      <div id="sim-summary" style="margin-top:14px;padding:14px;background:var(--ohnez-l);border-radius:12px;font-size:.85rem;color:var(--ohnez-h)"></div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div class="ex-container rise rise-d2">
+    <h3>📝 Aufgaben A bis C</h3>
+    <div class="ex-intro">Berechne die Wahrscheinlichkeiten für die folgenden Ereignisse. Nutze das Baumdiagramm und die Regeln oben.</div>
+
+    <!-- A -->
+    <div class="ex-mc" id="ex-mc-la">
+      <div class="ex-mc-label">A) Wie gross ist die Wahrscheinlichkeit, dass der <strong>zweite Halt</strong> der <strong>3. Stock</strong> ist?</div>
+      <button class="reveal-btn" onclick="toggleReveal('lift-hint-a')">💡 Hinweis anzeigen</button>
+      <div class="reveal-content" id="lift-hint-a">
+        Der Aufzug startet im 1. Stock (Richtung ↓). Überlege: Wohin kann er beim 1. Halt fahren? Und von dort zum 2. Halt?
+        <pre style="background:#1a1612;color:#f0e8f7">1. Stock ↓
+ ├─ runter (1/4) → EG ↓ → MUSS hoch → 1. Stock ↑ (2. Halt)
+ └─ hoch (3/4) → 2. Stock ↑
+      ├─ weiter hoch (3/4) → 3. Stock ↑ (2. Halt) ✓
+      └─ runter (1/4) → 1. Stock ↓ (2. Halt)</pre>
+      </div>
+      <div class="ex-mc-opts" style="margin-top:10px">
+        <div class="ex-mc-opt" onclick="checkExMC('la',this,0)">3/4</div>
+        <div class="ex-mc-opt" onclick="checkExMC('la',this,1)">9/16</div>
+        <div class="ex-mc-opt" onclick="checkExMC('la',this,2)">3/8</div>
+        <div class="ex-mc-opt" onclick="checkExMC('la',this,3)">1/2</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-la"></div>
+    </div>
+
+    <!-- B -->
+    <div class="ex-mc" id="ex-mc-lb">
+      <div class="ex-mc-label">B) Wie gross ist die Wahrscheinlichkeit, dass der <strong>dritte Halt</strong> der <strong>4. Stock</strong> ist?</div>
+      <button class="reveal-btn" onclick="toggleReveal('lift-hint-b')">💡 Hinweis anzeigen</button>
+      <div class="reveal-content" id="lift-hint-b">
+        Der einzige Weg zum 4. Stock als 3. Halt ist: 1→2→3→4. Der Aufzug muss also dreimal hintereinander nach oben fahren.
+        <pre style="background:#1a1612;color:#f0e8f7">1. Stock ↓ → hoch (3/4) → 2. Stock ↑
+  2. Stock ↑ → weiter hoch (3/4) → 3. Stock ↑
+    3. Stock ↑ → weiter hoch (3/4) → 4. Stock (3. Halt) ✓
+
+P = 3/4 × 3/4 × 3/4 = ?</pre>
+      </div>
+      <div class="ex-mc-opts" style="margin-top:10px">
+        <div class="ex-mc-opt" onclick="checkExMC('lb',this,0)">9/16</div>
+        <div class="ex-mc-opt" onclick="checkExMC('lb',this,1)">27/64</div>
+        <div class="ex-mc-opt" onclick="checkExMC('lb',this,2)">3/16</div>
+        <div class="ex-mc-opt" onclick="checkExMC('lb',this,3)">1/4</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-lb"></div>
+    </div>
+
+    <!-- C -->
+    <div class="ex-mc" id="ex-mc-lc">
+      <div class="ex-mc-label">C) Wie gross ist die Wahrscheinlichkeit, dass der <strong>vierte Halt</strong> der <strong>1. Stock</strong> ist?</div>
+      <button class="reveal-btn" onclick="toggleReveal('lift-hint-c')">💡 Hinweis anzeigen</button>
+      <div class="reveal-content" id="lift-hint-c">
+        Hier gibt es mehrere Pfade! Du musst alle Wege finden, die nach genau 4 Stopps im 1. Stock landen, und deren Wahrscheinlichkeiten addieren.
+        <pre style="background:#1a1612;color:#f0e8f7"><strong style="color:#b08fd6">Alle Pfade zum 1. Stock als 4. Halt:</strong>
+
+Pfad 1: 1↓ → EG → 1↑ → EG → <strong style="color:#b08fd6">1↑</strong>
+  P = 1/4 × 1 × 1/4 × 1 = 1/16
+
+Pfad 2: 1↓ → EG → 1↑ → 2↑ → <strong style="color:#b08fd6">1↓</strong>
+  P = 1/4 × 1 × 3/4 × 1/4 = 3/64
+
+Pfad 3: 1↓ → 2↑ → 1↓ → EG → <strong style="color:#b08fd6">1↑</strong>
+  P = 3/4 × 1/4 × 1/4 × 1 = 3/64
+
+Pfad 4: 1↓ → 2↑ → 1↓ → 2↑ → <strong style="color:#b08fd6">1↓</strong>
+  P = 3/4 × 1/4 × 3/4 × 1/4 = 9/256
+
+Pfad 5: 1↓ → 2↑ → 3↑ → 2↓ → <strong style="color:#b08fd6">1↓</strong>
+  P = 3/4 × 3/4 × 1/4 × 1/4 = 9/256
+
+Summe = 16/256 + 12/256 + 12/256 + 9/256 + 9/256
+      = 58/256 = 29/128</pre>
+      </div>
+      <div class="ex-mc-opts" style="margin-top:10px">
+        <div class="ex-mc-opt" onclick="checkExMC('lc',this,0)">9/64</div>
+        <div class="ex-mc-opt" onclick="checkExMC('lc',this,1)">81/256</div>
+        <div class="ex-mc-opt" onclick="checkExMC('lc',this,2)">29/128</div>
+        <div class="ex-mc-opt" onclick="checkExMC('lc',this,3)">27/128</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-lc"></div>
+    </div>
+  </div>
+
+  <!-- FULL TREE -->
+  <div class="ex-container rise rise-d3" id="lift-tree-section" style="display:none">
+    <h3>🌳 Vollständiges Baumdiagramm (4 Halte)</h3>
+    <div class="ex-intro">Hier siehst du <strong>alle möglichen Pfade</strong> des Aufzugs von der Startposition bis zum 4. Halt. Die grün markierten Pfade führen zum 1. Stock.</div>
+    <div class="reveal-content show">
+      <pre style="background:#1a1612;color:#f0e8f7;font-size:.78rem;line-height:1.7;padding:20px;border-radius:12px;overflow-x:auto"><strong style="color:#b08fd6">Start: 1. Stock ↓</strong>
+
+├─ ↓ EG (1/4)  <span style="color:#7a6f65">[muss ↑]</span>
+│   └─ ↑ 1. Stock (1)
+│       ├─ ↓ EG (1/4)  <span style="color:#7a6f65">[muss ↑]</span>
+│       │   └─ ↑ <strong style="color:#7dbfa0">1. Stock</strong> (1)     P = 1/4·1·1/4·1 = <strong style="color:#7dbfa0">1/16</strong>
+│       └─ ↑ 2. Stock (3/4)
+│           ├─ ↓ <strong style="color:#7dbfa0">1. Stock</strong> (1/4)   P = 1/4·1·3/4·1/4 = <strong style="color:#7dbfa0">3/64</strong>
+│           └─ ↑ 3. Stock (3/4)   P = 1/4·1·3/4·3/4 = 9/64
+│
+└─ ↑ 2. Stock (3/4)
+    ├─ ↓ 1. Stock (1/4)
+    │   ├─ ↓ EG (1/4)  <span style="color:#7a6f65">[muss ↑]</span>
+    │   │   └─ ↑ <strong style="color:#7dbfa0">1. Stock</strong> (1)     P = 3/4·1/4·1/4·1 = <strong style="color:#7dbfa0">3/64</strong>
+    │   └─ ↑ 2. Stock (3/4)
+    │       ├─ ↓ <strong style="color:#7dbfa0">1. Stock</strong> (1/4)   P = 3/4·1/4·3/4·1/4 = <strong style="color:#7dbfa0">9/256</strong>
+    │       └─ ↑ 3. Stock (3/4)   P = 3/4·1/4·3/4·3/4 = 27/256
+    │
+    └─ ↑ 3. Stock (3/4)
+        ├─ ↓ 2. Stock (1/4)
+        │   ├─ ↓ <strong style="color:#7dbfa0">1. Stock</strong> (1/4)   P = 3/4·3/4·1/4·1/4 = <strong style="color:#7dbfa0">9/256</strong>
+        │   └─ ↑ 3. Stock (3/4)   P = 3/4·3/4·1/4·3/4 = 27/256
+        │
+        └─ ↑ 4. Stock (3/4)  <span style="color:#7a6f65">[muss ↓]</span>
+            └─ ↓ 3. Stock (1)     P = 3/4·3/4·3/4·1 = 27/64
+
+<strong style="color:#b08fd6">Pfade zum 1. Stock als 4. Halt:</strong>
+  1/16 + 3/64 + 3/64 + 9/256 + 9/256
+  = 16/256 + 12/256 + 12/256 + 9/256 + 9/256
+  = <strong style="color:#7dbfa0">58/256 = 29/128 ≈ 0.2266</strong></pre>
+    </div>
+  </div>
+
+  <!-- 9 LIFTS VISUALIZATION -->
+  <div class="ex-container rise rise-d4">
+    <h3>🏢 Alle 9 Pfade simuliert</h3>
+    <div class="ex-intro">Klicke <strong>«Nächster Halt»</strong>, um alle 9 möglichen Aufzüge gleichzeitig Halt für Halt fahren zu sehen. Die <strong style="color:#1a6b4a">grünen</strong> landen im 1. Stock (Aufgabe C).</div>
+
+    <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:var(--ohnez-h)" id="nine-lifts-btn" onclick="nineLiftsStep()">Nächster Halt →</button>
+      <button class="btn-secondary" onclick="nineLiftsReset()">⟲ Reset</button>
+    </div>
+    <div id="nine-lifts-step" style="text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:12px">Start — alle Aufzüge im 1. Stock</div>
+    <div id="nine-lifts" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:16px 0">
+    </div>
+  </div>
+
+  <div class="step-nav" style="margin-top:24px">
+    <button class="btn-secondary" onclick="goToMap()">← Zurück zur Karte</button>
+  </div>
+
+</div>
+</div>
+
+<!-- VIEW: EXERCISE BIRTHDAY -->
+<div id="view-exercise-birthday" class="view">
+<div class="wrap">
+  <button class="back-btn" onclick="goToMap()">← Zurück zur Karte</button>
+
+  <div class="lesson-header" style="background:var(--regeln-h)">
+    <div class="lh-emoji">🎂</div>
+    <div class="lh-tag">Vertiefungsaufgabe</div>
+    <h2>Das Geburtstagsproblem</h2>
+    <div class="lh-sub">Warum 23 Personen reichen für eine 50%-Chance</div>
+  </div>
+
+  <!-- SITUATION -->
+  <div class="ex-container rise">
+    <h3>🤔 Die überraschende Frage</h3>
+    <div class="ex-intro">
+      Stell dir vor, du bist in einem Raum mit anderen Personen. <strong>Wie viele Personen müssen im Raum sein, damit die Wahrscheinlichkeit, dass mindestens zwei am selben Tag Geburtstag haben, grösser als 50% ist?</strong>
+    </div>
+    <div class="ex-mc" id="ex-mc-bg">
+      <div class="ex-mc-label">Was schätzt du?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('bg',this,0)">Etwa 183 (die Hälfte von 365)</div>
+        <div class="ex-mc-opt" onclick="checkExMC('bg',this,1)">Etwa 50</div>
+        <div class="ex-mc-opt" onclick="checkExMC('bg',this,2)">Nur 23!</div>
+        <div class="ex-mc-opt" onclick="checkExMC('bg',this,3)">Etwa 100</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-bg"></div>
+    </div>
+  </div>
+
+  <!-- TREE IDEA -->
+  <div class="ex-container rise rise-d1" id="bday-explain" style="display:none">
+    <h3>🌳 Die Idee: Gegenereignis nutzen</h3>
+    <div class="ex-intro">
+      Direkt zu rechnen, wie viele Geburtstags-Paare es gibt, wäre extrem kompliziert. Deshalb nutzen wir einen Trick: Wir berechnen das <strong>Gegenereignis</strong> — dass <em>alle</em> Geburtstage verschieden sind — und ziehen es von 1 ab.
+    </div>
+
+    <div class="theory-block" style="border-color:var(--regeln-m)">
+      <div class="tb-head"><span class="tb-icon">1️⃣</span><span class="tb-title">Person 1 betritt den Raum</span></div>
+      <div class="tb-text">
+        Die erste Person kann an <strong>jedem der 365 Tage</strong> Geburtstag haben. Es gibt noch niemanden zum Vergleichen — die Wahrscheinlichkeit für "keinen Treffer" ist also:
+        <pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.7;margin-top:10px">Person 1: <strong style="color:#d98a82">365/365 = 1</strong>  (100% — logisch!)</pre>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--regeln-m)">
+      <div class="tb-head"><span class="tb-icon">2️⃣</span><span class="tb-title">Person 2 kommt dazu</span></div>
+      <div class="tb-text">
+        Jetzt gibt es 1 "besetzten" Tag. Person 2 darf an <strong>364 von 365 Tagen</strong> Geburtstag haben, um kein Match zu erzeugen:
+        <pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.7;margin-top:10px">Person 1
+ └─ <strong style="color:#d98a82">neu</strong> (365/365)
+     Person 2
+      ├─ <strong style="color:#d98a82">neu</strong> (364/365) — anderer Tag → kein Match
+      └─ Treffer! (1/365) — gleicher Tag!</pre>
+        P(beide verschieden) = 365/365 × 364/365 = <strong>0.99726</strong>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--regeln-m)">
+      <div class="tb-head"><span class="tb-icon">3️⃣</span><span class="tb-title">Person 3 kommt dazu</span></div>
+      <div class="tb-text">
+        Jetzt sind schon 2 Tage "besetzt". Person 3 hat nur noch <strong>363 von 365</strong> freie Tage:
+        <pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.7;margin-top:10px">Person 1
+ └─ <strong style="color:#d98a82">neu</strong> (365/365)
+     Person 2
+      ├─ <strong style="color:#d98a82">neu</strong> (364/365)
+      │   Person 3
+      │    ├─ <strong style="color:#d98a82">neu</strong> (363/365) — noch ein anderer Tag
+      │    └─ Treffer! (2/365)
+      └─ Treffer!</pre>
+        P(alle 3 verschieden) = 365/365 × 364/365 × 363/365 = <strong>0.99180</strong>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--regeln-m)">
+      <div class="tb-head"><span class="tb-icon">🔑</span><span class="tb-title">Das Muster</span></div>
+      <div class="tb-text">
+        Siehst du das Muster? Jede neue Person hat <strong>einen Tag weniger</strong> zur Auswahl. Bei Person <em>n</em> gibt es noch <strong>(365 − n + 1)</strong> freie Tage. Der Baum wächst immer weiter:
+        <pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.7;margin-top:10px">Person 1:  365/365   (365 freie Tage)
+Person 2:  364/365   (364 freie Tage)
+Person 3:  363/365   (363 freie Tage)
+Person 4:  362/365   (362 freie Tage)
+   ...        ...
+Person 23: 343/365   (343 freie Tage)</pre>
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">✖️</span><span><strong>Pfadregel:</strong> Entlang des "neu"-Pfades alle Faktoren multiplizieren</span></div>
+        <div class="theory-item"><span class="ti-icon">📐</span><span>P(alle verschieden) = 365/365 × 364/365 × 363/365 × … × 343/365</span></div>
+        <div class="theory-item"><span class="ti-icon">💡</span><span>Jeder Faktor ist etwas kleiner als 1 → das Produkt schrumpft immer schneller!</span></div>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--regeln-m)">
+      <div class="tb-head"><span class="tb-icon">🔄</span><span class="tb-title">Gegenereignis: Der letzte Schritt</span></div>
+      <div class="tb-text">
+        Wir wollen aber <strong>P(mindestens ein Match)</strong> — das ist das Gegenereignis:
+        <pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.7;margin-top:10px"><strong style="color:#d98a82">P(mind. ein Match) = 1 − P(alle verschieden)</strong>
+
+Bei 23 Personen:
+  P(alle verschieden) = 365/365 × 364/365 × … × 343/365
+                      ≈ 0.4927
+
+  P(mind. ein Match)  = 1 − 0.4927
+                      = <strong style="color:#d98a82">0.5073 = 50.73%</strong></pre>
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">🎯</span><span>Bei nur 23 Personen ist die Chance auf einen gemeinsamen Geburtstag bereits <strong>grösser als 50%!</strong></span></div>
+        <div class="theory-item"><span class="ti-icon">🤔</span><span>Warum so wenig? Weil es nicht um DEINEN Geburtstag geht — es geht um IRGENDEIN Paar. Bei 23 Personen gibt es 23 × 22 / 2 = <strong>253 verschiedene Paare</strong> zum Vergleichen!</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE TABLE -->
+  <div class="ex-container rise rise-d2" id="bday-table-section" style="display:none">
+    <h3>📊 Die Rechnung Schritt für Schritt</h3>
+    <div class="ex-intro">Die Tabelle zeigt für jede Person den Faktor und das kumulative Produkt. Beobachte, wie P(alle verschieden) schrumpft — und wo es unter 0.5 fällt!</div>
+
+    <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:var(--regeln-h)" id="bday-add-btn" onclick="bdayAddRows()">Nächste 5 Personen hinzufügen →</button>
+      <button class="btn-secondary" onclick="bdayShowAll()">Alle 23 zeigen</button>
+      <button class="btn-secondary" onclick="bdayReset()">⟲ Reset</button>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table id="bday-table" style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead>
+          <tr style="background:var(--regeln-l)">
+            <th style="padding:10px 12px;text-align:center;font-weight:700;border-bottom:2px solid var(--regeln-m);color:var(--regeln-h)">Person</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;border-bottom:2px solid var(--regeln-m);color:var(--regeln-h)">Mögliche Tage</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;border-bottom:2px solid var(--regeln-m);color:var(--regeln-h)">Tage total</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;border-bottom:2px solid var(--regeln-m);color:var(--regeln-h)">Faktor</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;border-bottom:2px solid var(--regeln-m);color:var(--regeln-h)">P(alle versch.)</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;border-bottom:2px solid var(--regeln-m);color:var(--regeln-h)">P(mind. 1 Match)</th>
+          </tr>
+        </thead>
+        <tbody id="bday-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE CHART -->
+  <div class="ex-container rise rise-d3" id="bday-chart-section" style="display:none">
+    <h3>📈 Der Graph — wo kippt es?</h3>
+    <div class="ex-intro">Der Graph zeigt P(mindestens ein gemeinsamer Geburtstag) für 1 bis 70 Personen. Bewege den Slider und beobachte, wo die <strong>50%-Linie</strong> gekreuzt wird.</div>
+
+    <div style="text-align:center;margin-bottom:10px">
+      <input type="range" id="bday-slider" min="1" max="70" value="23" style="width:100%;max-width:500px;accent-color:var(--regeln-h)" oninput="bdayUpdateSlider(this.value)">
+      <div id="bday-slider-label" style="font-size:.9rem;font-weight:600;color:var(--regeln-h);margin-top:6px">n = 23 → P(Match) = 50.73%</div>
+    </div>
+
+    <canvas id="bday-canvas" width="600" height="300" style="width:100%;max-width:600px;display:block;margin:0 auto;border-radius:12px;background:var(--surface);border:1.5px solid var(--border)"></canvas>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="ex-container rise rise-d4" id="bday-quiz-section" style="display:none">
+    <h3>📝 Verständnisfragen</h3>
+
+    <div class="ex-mc" id="ex-mc-b1">
+      <div class="ex-mc-label">Warum rechnet man mit dem Gegenereignis "alle verschieden" statt direkt "mindestens ein Match"?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('b1',this,0)">Weil das Gegenereignis immer einfacher ist</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b1',this,1)">Weil "mindestens ein Match" viele verschiedene Fälle umfasst (1 Paar, 2 Paare, Drillinge...) — das Gegenereignis hat nur einen einzigen Pfad</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b1',this,2)">Weil man mit dem Gegenereignis grössere Zahlen bekommt</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b1',this,3)">Weil die Additionsregel es verlangt</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-b1"></div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-b2">
+      <div class="ex-mc-label">Bei 50 Personen in einem Raum — wie hoch schätzt du P(mindestens ein gemeinsamer Geburtstag)?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('b2',this,0)">Etwa 50%</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b2',this,1)">Etwa 75%</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b2',this,2)">Etwa 97%</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b2',this,3)">Etwa 85%</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-b2"></div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-b3">
+      <div class="ex-mc-label">Wie viele Personen braucht es für eine 99.9%-Chance auf einen gemeinsamen Geburtstag?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('b3',this,0)">Etwa 50</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b3',this,1)">Etwa 70</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b3',this,2)">Etwa 183</div>
+        <div class="ex-mc-opt" onclick="checkExMC('b3',this,3)">Etwa 365</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-b3"></div>
+    </div>
+  </div>
+
+  <div class="step-nav" style="margin-top:24px">
+    <button class="btn-secondary" onclick="goToMap()">← Zurück zur Karte</button>
+  </div>
+
+</div>
+</div>
+
+<!-- VIEW: EXERCISE RISK -->
+<div id="view-exercise-risk" class="view">
+<div class="wrap">
+  <button class="back-btn" onclick="goToMap()">← Zurück zur Karte</button>
+
+  <div class="lesson-header" style="background:var(--mitz-h)">
+    <div class="lh-emoji">☠️</div>
+    <div class="lh-tag">Challenge-Aufgabe</div>
+    <h2>Wie gefährlich ist das wirklich?</h2>
+    <div class="lh-sub">Todesrisiken verstehen, vergleichen und hinterfragen</div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="ex-container rise">
+    <h3>📋 Die Risiko-Tabelle</h3>
+    <div class="ex-intro">
+      Die folgende Tabelle zeigt das <strong>jährliche Todesrisiko pro Person</strong> (× 10⁻⁷) für verschiedene Ursachen. Das heisst: Wie viele von 10 Millionen Menschen sterben pro Jahr an dieser Ursache?
+    </div>
+    <div style="padding:10px 14px;background:var(--bg);border-radius:10px;font-size:.8rem;color:var(--muted);margin-bottom:14px">
+      📎 Quelle: Longman-Lehrbuch (didaktisches Beispiel). Die Grössenordnungen sind realistisch, aber nicht alle Werte entsprechen exakt aktuellen Statistiken — genau das macht die Aufgabe spannend!
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead>
+          <tr style="background:var(--mitz-l)">
+            <th style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid var(--mitz-m);color:var(--mitz-h)">Ursache</th>
+            <th style="padding:10px 12px;text-align:right;font-weight:700;border-bottom:2px solid var(--mitz-m);color:var(--mitz-h)">Risiko (× 10⁻⁷)</th>
+          </tr>
+        </thead>
+        <tbody id="risk-unsorted">
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🧗 Klettern</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">400</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">⚽ Fussball</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">400</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🍷 Trinken (1 Flasche Wein/Tag)</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">750</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🚬 Rauchen (20 Zigaretten/Tag)</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">50'000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🏎️ Motorrennen</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">200'000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🚗 Von Fahrzeug überfahren</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">500</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🌊 Überschwemmungen</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">22</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🌍 Erdbeben</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">17</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🌪️ Tornados</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">22</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">⚡ Blitzschlag</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">3</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">✈️ Herabfallendes Flugzeug</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">1</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🐍 Giftige Tiere</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">2</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">🤒 Influenza</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">2'000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid var(--border)">☄️ Meteorit</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">0.0006</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SORTING QUIZ -->
+  <div class="ex-container rise rise-d1">
+    <h3>🏆 Aufgabe A — Einordnen</h3>
+    <div class="ex-intro">Teste dein Gefühl! Welche Aussagen über das Ranking stimmen?</div>
+
+    <div class="ex-mc" id="ex-mc-r1">
+      <div class="ex-mc-label">Was ist die sicherste Ursache in der Tabelle (geringstes Risiko)?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('r1',this,0)">⚡ Blitzschlag</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r1',this,1)">☄️ Meteorit</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r1',this,2)">✈️ Herabfallendes Flugzeug</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r1',this,3)">🐍 Giftige Tiere</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-r1"></div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-r2">
+      <div class="ex-mc-label">Wie viel gefährlicher ist Rauchen (20 Zig./Tag) im Vergleich zu Klettern?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('r2',this,0)">Etwa 10× gefährlicher</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r2',this,1)">Etwa 50× gefährlicher</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r2',this,2)">Etwa 125× gefährlicher</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r2',this,3)">Etwa 500× gefährlicher</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-r2"></div>
+    </div>
+
+    <div class="ex-mc" id="ex-mc-r3">
+      <div class="ex-mc-label">Rauchen: "1 von 200 pro Jahr". Wie drückt man das anders aus?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('r3',this,0)">0.5% Sterberisiko pro Jahr</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r3',this,1)">0.05% Sterberisiko pro Jahr</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r3',this,2)">5% Sterberisiko pro Jahr</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r3',this,3)">0.005% Sterberisiko pro Jahr</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-r3"></div>
+    </div>
+  </div>
+
+  <!-- SORTED TABLE -->
+  <div class="ex-container rise rise-d2" id="risk-sorted-section" style="display:none">
+    <h3>📊 Vollständiges Ranking (sicherste → gefährlichste)</h3>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead>
+          <tr style="background:var(--mitz-l)">
+            <th style="padding:10px 8px;text-align:center;font-weight:700;border-bottom:2px solid var(--mitz-m);color:var(--mitz-h)">#</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid var(--mitz-m);color:var(--mitz-h)">Ursache</th>
+            <th style="padding:10px 12px;text-align:right;font-weight:700;border-bottom:2px solid var(--mitz-m);color:var(--mitz-h)">Risiko (×10⁻⁷)</th>
+            <th style="padding:10px 12px;text-align:right;font-weight:700;border-bottom:2px solid var(--mitz-m);color:var(--mitz-h)">≈ 1 von …</th>
+          </tr>
+        </thead>
+        <tbody id="risk-sorted-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXPOSURE BIAS -->
+  <div class="ex-container rise rise-d3" id="risk-exposure-section" style="display:none">
+    <h3>⚠️ Aufgabe B — Wer ist überhaupt betroffen?</h3>
+    <div class="ex-intro">
+      Der entscheidende Punkt: Nicht alle Risiken betreffen alle Menschen gleich! Manche Gefahren treffen <strong>jeden</strong>, andere nur die, die eine bestimmte Aktivität ausüben. Das macht den Vergleich in einer einzigen Tabelle problematisch.
+    </div>
+
+    <div class="theory-block" style="border-color:var(--mitz-m)">
+      <div class="tb-head"><span class="tb-icon">🌍</span><span class="tb-title">Kategorie 1: Betrifft (fast) alle</span></div>
+      <div class="tb-text">
+        Diese Risiken treffen die <strong>gesamte Bevölkerung</strong> — man kann ihnen kaum ausweichen. Die Zahl in der Tabelle ist direkt aussagekräftig.
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">☄️</span><span><strong>Meteorit</strong> (0.0006) — trifft alle auf der Erde. Aber extrem unsicher, weil rein theoretisch modelliert (es gibt fast keine historischen Fälle).</span></div>
+        <div class="theory-item"><span class="ti-icon">🌍</span><span><strong>Erdbeben</strong> (17) — betrifft alle in Erdbebengebieten. In der Schweiz geringer als in Japan. Die Zahl ist ein weltweiter Durchschnitt.</span></div>
+        <div class="theory-item"><span class="ti-icon">🌊</span><span><strong>Überschwemmungen</strong> (22) — betrifft vor allem Bewohner von Flussgebieten und Küsten, aber grundsätzlich ein allgemeines Risiko.</span></div>
+        <div class="theory-item"><span class="ti-icon">🌪️</span><span><strong>Tornados</strong> (22) — stark regional abhängig (USA: Tornado Alley). In Europa viel seltener.</span></div>
+        <div class="theory-item"><span class="ti-icon">⚡</span><span><strong>Blitzschlag</strong> (3) — kann jeden treffen, der draussen ist. Die Zahl passt gut zu realen Daten (~0.3 pro Million).</span></div>
+        <div class="theory-item"><span class="ti-icon">✈️</span><span><strong>Herabfallendes Flugzeug</strong> (1) — betrifft alle, ist aber extrem selten.</span></div>
+        <div class="theory-item"><span class="ti-icon">🐍</span><span><strong>Giftige Tiere</strong> (2) — stark regional (in der Schweiz praktisch null, in Australien deutlich höher).</span></div>
+        <div class="theory-item"><span class="ti-icon">🤒</span><span><strong>Influenza</strong> (2'000) — betrifft potenziell alle, besonders ältere und immungeschwächte Menschen. Die Zahl ist plausibel.</span></div>
+        <div class="theory-item"><span class="ti-icon">🚗</span><span><strong>Von Fahrzeug überfahren</strong> (500) — betrifft alle Fussgänger und Verkehrsteilnehmer, also fast alle.</span></div>
+      </div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--mitz-m)">
+      <div class="tb-head"><span class="tb-icon">🎯</span><span class="tb-title">Kategorie 2: Nur wenn man es tut!</span></div>
+      <div class="tb-text">
+        Diese Risiken betreffen <strong>nur Personen, die die Aktivität ausüben</strong>. Wer nicht klettert, hat null Kletterrisiko! Trotzdem sind die Zahlen in der Tabelle auf die <em>gesamte</em> Bevölkerung bezogen — das "verdünnt" das Risiko massiv.
+      </div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">🧗</span><span><strong>Klettern</strong> (400) — nur Kletterer sind betroffen.</span></div>
+        <div class="theory-item"><span class="ti-icon">⚽</span><span><strong>Fussball</strong> (400) — nur aktive Spieler. "Football" könnte auch American Football meinen — dort ist das Risiko viel höher als bei Soccer.</span></div>
+        <div class="theory-item"><span class="ti-icon">🏎️</span><span><strong>Motorrennen</strong> (200'000) — nur Rennfahrer, und das sind extrem wenige!</span></div>
+      </div>
+      <div style="margin-top:16px;font-size:.88rem;line-height:1.7">
+        <strong>Probiere es aus:</strong> Stelle mit den Slidern ein, wie viel Prozent der Bevölkerung die Aktivität wirklich ausübt. Beobachte, wie sich das <strong>tatsächliche Risiko pro Teilnehmer</strong> verändert!
+      </div>
+      <div id="risk-sliders-activity" style="margin-top:14px;display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--mitz-m)">
+      <div class="tb-head"><span class="tb-icon">🍷</span><span class="tb-title">Kategorie 3: Verhaltensabhängig</span></div>
+      <div class="tb-text">
+        Diese Risiken gelten nur unter einer <strong>bestimmten Bedingung</strong> (täglicher Konsum). Auch hier: Wie viel Prozent der Bevölkerung zeigt dieses Verhalten?
+      </div>
+      <div id="risk-sliders-behavior" style="margin-top:14px;display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+
+    <div class="aha-box">
+      <h4>🔑 Die Kernfrage</h4>
+      <p>Diese Tabelle mischt <strong>drei völlig verschiedene Arten von Risiken</strong> in einer Spalte:</p>
+      <ul>
+        <li><span style="font-weight:700">🌍</span> <span>Allgemeine Risiken (Blitz, Erdbeben) → die Zahl gilt für alle</span></li>
+        <li><span style="font-weight:700">🎯</span> <span>Aktivitätsrisiken (Klettern, Motorrennen) → die Zahl ist "verdünnt", weil Nicht-Teilnehmer mitzählen</span></li>
+        <li><span style="font-weight:700">🍷</span> <span>Verhaltensrisiken (Rauchen, Trinken) → die Zahl gilt nur bei bestimmtem Verhalten</span></li>
+      </ul>
+      <p style="margin-top:12px"><strong>Das Ranking sieht einfach aus — aber ein fairer Vergleich ist es nicht!</strong> Man vergleicht Äpfel mit Birnen.</p>
+    </div>
+  </div>
+
+  <!-- DISCUSSION -->
+  <div class="ex-container rise rise-d4" id="risk-discuss-section" style="display:none">
+    <h3>💬 Diskussion: Wie genau sind diese Zahlen?</h3>
+
+    <div class="ex-mc" id="ex-mc-r4">
+      <div class="ex-mc-label">Welche Aussage stimmt NICHT?</div>
+      <div class="ex-mc-opts">
+        <div class="ex-mc-opt" onclick="checkExMC('r4',this,0)">Seltene Ereignisse (Meteoriten) sind modelliert und sehr unsicher</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r4',this,1)">Aktivitätsrisiken (Klettern, Motorrennen) sind direkt mit Naturereignissen (Erdbeben) vergleichbar</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r4',this,2)">Gesundheitsrisiken (Rauchen, Alkohol) stammen aus epidemiologischen Langzeitstudien</div>
+        <div class="ex-mc-opt" onclick="checkExMC('r4',this,3)">Die Definition von "Fussball" könnte American Football oder Soccer meinen — das macht einen grossen Unterschied</div>
+      </div>
+      <div class="ex-mc-feedback" id="exf-r4"></div>
+    </div>
+
+    <div class="theory-block" style="border-color:var(--mitz-m)">
+      <div class="tb-head"><span class="tb-icon">📝</span><span class="tb-title">Zusammenfassung: 3 Lehren</span></div>
+      <div class="tb-text"></div>
+      <div class="theory-items">
+        <div class="theory-item"><span class="ti-icon">1️⃣</span><span><strong>Risikotypen unterscheiden.</strong> Wer nicht klettert, hat null Kletterrisiko. Die Tabelle tut so, als wäre das Risiko für alle gleich — das ist irreführend.</span></div>
+        <div class="theory-item"><span class="ti-icon">2️⃣</span><span><strong>Regionale Unterschiede.</strong> Tornados sind in der Schweiz kein Thema, giftige Tiere auch nicht. Erdbeben treffen Japan stärker als Europa. Ein Weltdurchschnitt sagt wenig über dein persönliches Risiko.</span></div>
+        <div class="theory-item"><span class="ti-icon">3️⃣</span><span><strong>Datenqualität variiert enorm.</strong> Raucher-Daten basieren auf Langzeitstudien mit Millionen Teilnehmenden. Meteoriten-Risiken sind rein theoretisch. Motorrennen-Zahlen scheinen fragwürdig. Alles in einer Tabelle suggeriert eine Genauigkeit, die nicht existiert.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-nav" style="margin-top:24px">
+    <button class="btn-secondary" onclick="goToMap()">← Zurück zur Karte</button>
+  </div>
+
+</div>
+</div>
+
+<!-- VIEW: LESSON -->
+<div id="view-lesson" class="view">
+<div class="wrap">
+  <button class="back-btn" onclick="goToMap()">← Zurück zur Karte</button>
+  <div id="lesson-content"></div>
+</div>
+</div>
+
+<!-- VIEW: QUIZ -->
+<div id="view-quiz" class="view">
+<div class="wrap">
+  <button class="back-btn" onclick="goToMap()">← Zurück zur Karte</button>
+  <div id="quiz-content"></div>
+</div>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const progress={grund:0,regeln:0,mitz:0,ohnez:0,anwend:0,monty:0};
+let currentScale=null,currentStep=0;
+const quizAnswered={};
+const COLORS={
+  grund:{h:'#1a4a8a',l:'#e8f0fb',m:'#8badd4'},
+  regeln:{h:'#c0392b',l:'#fbe8e6',m:'#d98a82'},
+  mitz:{h:'#1a6b4a',l:'#e6f5ee',m:'#7dbfa0'},
+  ohnez:{h:'#6a3d9a',l:'#f0e8f7',m:'#b08fd6'},
+  anwend:{h:'#b8860b',l:'#faf3e0',m:'#d4b96a'},
+  monty:{h:'#2d7d7a',l:'#e6f3f3',m:'#7dbcba'}
+};
+
+const SCALE_ORDER=['grund','regeln','mitz','ohnez','anwend','monty'];
+const SCALE_LABELS={grund:'Grundgesetze',regeln:'Regeln',mitz:'Mit Zurücklegen',ohnez:'Ohne Zurücklegen',anwend:'Anwendungen',monty:'Monty Hall'};
+
+const lessons={
+  grund:{
+    emoji:'📐',tag:'Stufe 1',title:'Grundgesetze der\nWahrscheinlichkeit',subtitle:'p(A), p(Ā) und die Komplementregel',
+    steps:[
+      {type:'theory',label:'Schritt 1 · Theorie',btnText:'Weiter zu den Beispielen →',
+        content:[
+          {icon:'🎯',title:'Was ist Wahrscheinlichkeit?',
+            text:'Die Wahrscheinlichkeit <strong>p(A)</strong> gibt an, wie wahrscheinlich ein Ereignis A eintritt. Der Wert liegt immer zwischen 0 (unmöglich) und 1 (sicher).',
+            items:[
+              {icon:'✓',text:'p(A) = 0 → Das Ereignis tritt nie ein'},
+              {icon:'✓',text:'p(A) = 1 → Das Ereignis tritt sicher ein'},
+              {icon:'📊',text:'p(A) = 0.5 → Das Ereignis tritt in 50% der Fälle ein'}
+            ]},
+          {icon:'🔄',title:'Das Gegenereignis p(Ā)',
+            text:'<strong>p(Ā)</strong> ist die Wahrscheinlichkeit, dass Ereignis A <em>nicht</em> eintritt. Es gilt immer:',
+            items:[
+              {icon:'📐',text:'p(A) + p(Ā) = 1'},
+              {icon:'➡️',text:'Also: p(Ā) = 1 − p(A)'}
+            ]},
+          {icon:'💡',title:'Beispiel: Spinner 1–10',
+            text:'Ein fairer Spinner mit den Zahlen 1–10 wird gedreht. Wie wahrscheinlich ist es, <strong>keine</strong> Primzahl zu erhalten?',
+            items:[
+              {icon:'1️⃣',text:'Primzahlen: 2, 3, 5, 7 → p(Primzahl) = 4/10'},
+              {icon:'2️⃣',text:'p(keine Primzahl) = 1 − 4/10 = 6/10 = 3/5'}
+            ]}
+        ]},
+      {type:'interactive',label:'Schritt 2 · Interaktiv',btnText:'Zum Mini-Quiz →',
+        title:'Welche Aussagen stimmen?',
+        subtitle:'Klicke nur die <strong>richtigen</strong> Aussagen an. Falsche werden rot markiert.',
+        chips:[
+          {text:'p(A) kann negativ sein',correct:false},
+          {text:'p(A) + p(Ā) = 1',correct:true},
+          {text:'p(Ā) = 1 − p(A)',correct:true},
+          {text:'p(A) liegt zwischen 0 und 1',correct:true},
+          {text:'Wenn p(A) = 0.3, dann p(Ā) = 0.3',correct:false},
+          {text:'p(A) = 1 bedeutet: sicheres Ereignis',correct:true}
+        ],
+        explainer:'Perfekt! Die Wahrscheinlichkeit liegt immer zwischen 0 und 1. Das Gegenereignis ergibt sich durch p(Ā) = 1 − p(A).'
+      },
+      {type:'quiz',label:'Schritt 3 · Mini-Quiz',
+        questions:[
+          {q:'Ein fairer Würfel wird geworfen. Wie gross ist p(keine 6)?',opts:['1/6','5/6','4/6','1/3'],correct:1,
+            ok:'Richtig! p(keine 6) = 1 − 1/6 = 5/6.',fail:'Leider falsch. p(keine 6) = 1 − p(6) = 1 − 1/6 = 5/6.'},
+          {q:'Wenn p(Regen) = 0.35, wie gross ist p(kein Regen)?',opts:['0.35','0.75','0.65','0.55'],correct:2,
+            ok:'Genau! p(kein Regen) = 1 − 0.35 = 0.65.',fail:'Nicht ganz. p(kein Regen) = 1 − 0.35 = 0.65.'},
+          {q:'Welchen Wertebereich hat p(A)?',opts:['−1 bis 1','0 bis 100','0 bis 1','0 bis 10'],correct:2,
+            ok:'Korrekt! Wahrscheinlichkeiten liegen immer zwischen 0 und 1.',fail:'Wahrscheinlichkeiten liegen zwischen 0 und 1 (inklusive).'}
+        ]}
+    ]
+  },
+  regeln:{
+    emoji:'⚖️',tag:'Stufe 2',title:'Multiplikations- &\nAdditionsregel',subtitle:'Unabhängige und sich ausschliessende Ereignisse',
+    steps:[
+      {type:'theory',label:'Schritt 1 · Theorie',btnText:'Weiter zu den Beispielen →',
+        content:[
+          {icon:'🔗',title:'Unabhängige Ereignisse',
+            text:'Zwei Ereignisse sind <strong>unabhängig</strong>, wenn das eine keinen Einfluss auf das andere hat. Beispiel: Schnee in Stockholm beeinflusst nicht, ob dein Lehrer im Lotto gewinnt.',
+            items:[
+              {icon:'✓',text:'Zwei Würfelwürfe sind unabhängig'},
+              {icon:'✓',text:'Münzwürfe sind unabhängig'},
+              {icon:'✗',text:'Karten ohne Zurücklegen sind NICHT unabhängig'}
+            ]},
+          {icon:'✖️',title:'Multiplikationsregel ("und")',
+            text:'Für <strong>unabhängige</strong> Ereignisse A und B gilt:<br><br><strong>p(A und B) = p(A) × p(B)</strong><br><br>Beispiel: Ein Zahlenwürfel (1–6) und ein Farbwürfel (R,Y,B,G,W,P) werden geworfen. Wie gross ist p(ungerade UND lila)?<pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Start\n ├─ ungerade (3/6 = 1/2)\n │    ├─ purple (1/6) → p = 1/2 × 1/6 = <strong style="color:#d98a82">1/12</strong>\n │    └─ !purple (5/6) → p = 1/2 × 5/6 = 5/12\n └─ gerade (3/6 = 1/2)\n      ├─ purple (1/6) → p = 1/2 × 1/6 = 1/12\n      └─ !purple (5/6) → p = 1/2 × 5/6 = 5/12</pre>',
+            items:[
+              {icon:'📐',text:'p(A und B) = p(A) × p(B)'},
+              {icon:'💡',text:'p(ungerade und purple) = 1/2 × 1/6 = 1/12'}
+            ]},
+          {icon:'🚫',title:'Sich gegenseitig ausschliessende Ereignisse',
+            text:'Zwei Ereignisse <strong>schliessen sich aus</strong>, wenn sie nicht gleichzeitig eintreten können. Eine Würfelzahl ist z.B. nicht gleichzeitig gerade UND ungerade.',
+            items:[]},
+          {icon:'➕',title:'Additionsregel ("oder")',
+            text:'Für sich gegenseitig <strong>ausschliessende</strong> Ereignisse gilt:<br><br><strong>p(A oder B) = p(A) + p(B)</strong><br><br>Beispiel: Eine Karte wird aus 52 Karten gezogen. Wie gross ist p(Ass oder König)?<pre style="background:#1a1612;color:#fbe8e6;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Eine Karte gezogen:\n ├─ Ass?   → p(Ass)   = 4/52 = 1/13\n ├─ König? → p(König) = 4/52 = 1/13\n └─ Anderes → p(rest) = 44/52\n\nAss und König schliessen sich aus\n(eine Karte kann nicht beides sein!)\n\n→ p(Ass ODER König) = 1/13 + 1/13 = <strong style="color:#d98a82">2/13</strong></pre>',
+            items:[
+              {icon:'📐',text:'p(A oder B) = p(A) + p(B) — nur bei sich ausschliessenden Ereignissen!'},
+              {icon:'⚠️',text:'Achtung: Wenn A und B gleichzeitig möglich sind, gilt diese einfache Regel NICHT'}
+            ]}
+        ]},
+      {type:'interactive',label:'Schritt 2 · Interaktiv',btnText:'Zum Mini-Quiz →',
+        title:'Multiplikation oder Addition?',
+        subtitle:'Klicke nur die <strong>richtigen</strong> Zuordnungen an. Falsche werden rot markiert.',
+        chips:[
+          {text:'p(6 und Kopf) → multiplizieren',correct:true},
+          {text:'p(Ass oder König) → addieren',correct:true},
+          {text:'p(gerade und ungerade gleichzeitig) → addieren',correct:false},
+          {text:'p(rot oder schwarz bei Karte) → multiplizieren',correct:false},
+          {text:'p(zwei Sechsen nacheinander) → multiplizieren',correct:true},
+          {text:'p(Herz oder Karo) → addieren',correct:true}
+        ],
+        explainer:'"UND" bedeutet multiplizieren (beide Ereignisse müssen eintreten). "ODER" bedeutet addieren (mindestens eines tritt ein — bei sich ausschliessenden Ereignissen).'
+      },
+      {type:'quiz',label:'Schritt 3 · Mini-Quiz',
+        questions:[
+          {q:'Ein Würfel und eine Münze werden geworfen. Wie gross ist p(6 und Kopf)?',opts:['1/3','1/6','1/12','1/8'],correct:2,
+            ok:'Richtig! p(6 und Kopf) = 1/6 × 1/2 = 1/12.',fail:'Es gilt: p(6 und Kopf) = 1/6 × 1/2 = 1/12.'},
+          {q:'Aus 52 Karten wird eine gezogen. Wie gross ist p(Ass oder König)?',opts:['1/13','2/13','4/52','8/13'],correct:1,
+            ok:'Korrekt! p(Ass oder König) = 4/52 + 4/52 = 8/52 = 2/13.',fail:'Da sich die Ereignisse ausschliessen: 4/52 + 4/52 = 2/13.'}
+        ]}
+    ]
+  },
+  mitz:{
+    emoji:'🌳',tag:'Stufe 3',title:'Baumdiagramme\nmit Zurücklegen',subtitle:'Zwei Stufen mit unveränderten Wahrscheinlichkeiten',
+    steps:[
+      {type:'theory',label:'Schritt 1 · Theorie',btnText:'Weiter zu den Beispielen →',
+        content:[
+          {icon:'🌳',title:'Was ist ein Baumdiagramm?',
+            text:'Ein <strong>Baumdiagramm</strong> zeigt alle möglichen Ergebnisse eines mehrstufigen Zufallsexperiments. Jeder Ast ist ein möglicher Ausgang mit seiner Wahrscheinlichkeit.',
+            items:[
+              {icon:'→',text:'Entlang eines Pfades: Wahrscheinlichkeiten MULTIPLIZIEREN (Pfadregel)'},
+              {icon:'↓',text:'Verschiedene Pfade zum selben Ereignis: ADDIEREN (Summenregel)'}
+            ]},
+          {icon:'✅',title:'Die Astregel — dein Fehlercheck',
+            text:'An <strong>jeder Verzweigung</strong> im Baum müssen die Wahrscheinlichkeiten aller Äste zusammen <strong>genau 1</strong> ergeben. Das gilt für JEDE Stufe! Damit kannst du sofort Fehler im Baum erkennen.<pre style="background:#1a1612;color:#e8f0fb;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto"><strong style="color:#7dbfa0">✓ Korrekter Baum (Astregel erfüllt):</strong>\nStart\n ├─ rot (2/5)  ─┐\n └─ grün (3/5) ─┘→ 2/5 + 3/5 = <strong style="color:#7dbfa0">1 ✓</strong>\n\n<strong style="color:#d98a82">✗ Fehlerhafter Baum (Astregel verletzt):</strong>\nStart\n ├─ rot (2/5)  ─┐\n └─ grün (2/5) ─┘→ 2/5 + 2/5 = <strong style="color:#d98a82">4/5 ≠ 1 ✗</strong>\n       └─ Fehler! Müsste 3/5 sein!</pre><br>Auch die <strong>Endresultate</strong> aller Pfade müssen zusammen 1 ergeben — das ist eine zweite Kontrolle!',
+            items:[
+              {icon:'📐',text:'Astregel: An jeder Verzweigung gilt: Summe aller Äste = 1'},
+              {icon:'🧮',text:'Pfadkontrolle: Summe aller Endwahrscheinlichkeiten = 1'},
+              {icon:'💡',text:'Tipp: Wenn die Summe ≠ 1, stimmt etwas nicht!'}
+            ]},
+          {icon:'🔄',title:'Mit Zurücklegen',
+            text:'Bei Versuchen <strong>mit Zurücklegen</strong> bleibt die Zusammensetzung unverändert. Die Wahrscheinlichkeiten ändern sich nicht von Stufe zu Stufe.',
+            items:[
+              {icon:'🎲',text:'Würfel zweimal werfen: p(6) bleibt immer 1/6'},
+              {icon:'📦',text:'Kugel ziehen und zurücklegen: gleiche Wahrscheinlichkeit'}
+            ]},
+          {icon:'💡',title:'Beispiel: Würfel zweimal werfen',
+            text:'Ein fairer Würfel wird zweimal geworfen. Wie gross ist p(zwei Sechsen)?<pre style="background:#1a1612;color:#e8f0fb;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Start\n ├─ 6 (1/6)\n │    ├─ 6 (1/6)  → 6,6  = 1/6 × 1/6 = <strong style="color:#7dbfa0">1/36</strong>\n │    └─ !6 (5/6) → 6,!6 = 1/6 × 5/6 = 5/36\n └─ !6 (5/6)\n      ├─ 6 (1/6)  → !6,6 = 5/6 × 1/6 = 5/36\n      └─ !6 (5/6) → !6,!6= 5/6 × 5/6 = 25/36</pre>',
+            items:[
+              {icon:'✓',text:'p(zwei Sechsen) = 1/36'},
+              {icon:'✓',text:'p(genau eine 6) = 5/36 + 5/36 = 10/36'},
+              {icon:'✓',text:'p(keine 6) = 25/36'},
+              {icon:'🧮',text:'Kontrolle: 1/36 + 10/36 + 25/36 = 36/36 = 1 ✓'}
+            ]},
+          {icon:'🏀',title:'Beispiel: Basketball-Freiwürfe',
+            text:'Trefferquote = 2/3. Ein Spieler wirft zweimal.<pre style="background:#1a1612;color:#e8f0fb;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Start\n ├─ Korb (2/3)\n │    ├─ Korb (2/3)  → KK = 2/3 × 2/3 = <strong style="color:#7dbfa0">4/9</strong>\n │    └─ !Korb (1/3) → K!K = 2/3 × 1/3 = 2/9\n └─ !Korb (1/3)\n      ├─ Korb (2/3)  → !KK = 1/3 × 2/3 = 2/9\n      └─ !Korb (1/3) → !K!K= 1/3 × 1/3 = <strong style="color:#d98a82">1/9</strong></pre>',
+            items:[
+              {icon:'✓',text:'p(zwei Treffer) = 4/9'},
+              {icon:'✓',text:'p(genau ein Treffer) = 2/9 + 2/9 = 4/9'},
+              {icon:'✓',text:'p(kein Treffer) = 1/9'}
+            ]}
+        ]},
+      {type:'interactive',label:'Schritt 2 · Interaktiv',btnText:'Zum Mini-Quiz →',
+        title:'Box: 2 rote, 3 grüne Kugeln — MIT Zurücklegen',
+        subtitle:'Klicke nur die <strong>richtigen</strong> Berechnungen an. Falsche werden rot markiert.',
+        chips:[
+          {text:'p(zwei rote) = 2/5 × 2/5 = 4/25',correct:true},
+          {text:'p(zwei grüne) = 3/5 × 3/5 = 9/25',correct:true},
+          {text:'p(rot dann grün) = 2/5 × 3/5 = 6/25',correct:true},
+          {text:'p(zwei rote) = 2/5 × 1/4 = 2/20',correct:false},
+          {text:'p(rot und grün, beliebige Reihenfolge) = 2 × 6/25 = 12/25',correct:true},
+          {text:'p(zwei grüne) = 3/5 × 2/4 = 6/20',correct:false}
+        ],
+        explainer:'Bei MIT Zurücklegen bleibt die Zusammensetzung gleich: 2/5 für rot, 3/5 für grün — in jeder Stufe!'
+      },
+      {type:'quiz',label:'Schritt 3 · Mini-Quiz',
+        questions:[
+          {q:'Box mit 4 gelben und 6 blauen Krawatten. Ziehung MIT Zurücklegen. p(zwei gelbe)?',opts:['4/25','16/100','6/25','4/10'],correct:1,
+            ok:'Richtig! p(gelb) = 4/10 = 2/5, p(zwei gelbe) = 2/5 × 2/5 = 4/25 = 16/100.',fail:'p(gelb) = 4/10 = 2/5. p(zwei gelbe) = 2/5 × 2/5 = 4/25 = 16/100.'},
+          {q:'Würfel zweimal werfen. p(keine 6)?',opts:['5/36','25/36','10/36','1/36'],correct:1,
+            ok:'Genau! p(keine 6) = 5/6 × 5/6 = 25/36.',fail:'p(nicht 6) = 5/6. p(zweimal nicht 6) = 5/6 × 5/6 = 25/36.'},
+          {q:'Würfel zweimal werfen. p(6 und nicht 6, beliebige Reihenfolge)?',opts:['5/36','10/36','1/36','5/18'],correct:1,
+            ok:'Korrekt! Zwei Pfade: 1/6 × 5/6 + 5/6 × 1/6 = 10/36.',fail:'Es gibt 2 Pfade: 1/6 × 5/6 und 5/6 × 1/6. Zusammen: 10/36.'}
+        ]}
+    ]
+  },
+  ohnez:{
+    emoji:'🔀',tag:'Stufe 4',title:'Baumdiagramme\nohne Zurücklegen',subtitle:'Veränderte Wahrscheinlichkeiten bei der zweiten Stufe',
+    steps:[
+      {type:'theory',label:'Schritt 1 · Theorie',btnText:'Weiter zu den Beispielen →',
+        content:[
+          {icon:'⚠️',title:'Was ändert sich ohne Zurücklegen?',
+            text:'Wenn ein Objekt <strong>nicht zurückgelegt</strong> wird, ändert sich die Zusammensetzung für den nächsten Zug. Die Gesamtzahl sinkt und die Wahrscheinlichkeiten passen sich an.',
+            items:[
+              {icon:'📦',text:'Beispiel: 2 schwarze + 4 weisse Steine (total 6)'},
+              {icon:'1️⃣',text:'Erster Zug: p(schwarz) = 2/6 = 1/3'},
+              {icon:'2️⃣',text:'Falls schwarz gezogen: p(schwarz) = 1/5 (nur noch 1 von 5!)'}
+            ]},
+          {icon:'💡',title:'Beispiel durchgerechnet',
+            text:'Box: 2 schwarze (B) und 4 weisse (W) Steine. Ziehung OHNE Zurücklegen.<pre style="background:#1a1612;color:#f0e8f7;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Start (2B, 4W = 6 total)\n ├─ B (2/6)\n │    ├─ B (1/5) → BB = 2/6 × 1/5 = 2/30  = <strong style="color:#b08fd6">1/15</strong>\n │    └─ W (4/5) → BW = 2/6 × 4/5 = 8/30  = <strong style="color:#b08fd6">4/15</strong>\n └─ W (4/6)\n      ├─ B (2/5) → WB = 4/6 × 2/5 = 8/30  = <strong style="color:#b08fd6">4/15</strong>\n      └─ W (3/5) → WW = 4/6 × 3/5 = 12/30 = <strong style="color:#b08fd6">2/5</strong></pre><br>Beachte: Nach dem Ziehen von B ist nur noch <strong>1B von 5</strong> übrig. Nach W: noch <strong>2B von 5</strong> und <strong>3W von 5</strong>.',
+            items:[
+              {icon:'→',text:'p(BB) = 2/6 × 1/5 = 1/15'},
+              {icon:'→',text:'p(BW) = 2/6 × 4/5 = 4/15'},
+              {icon:'→',text:'p(WB) = 4/6 × 2/5 = 4/15'},
+              {icon:'→',text:'p(WW) = 4/6 × 3/5 = 2/5'}
+            ]},
+          {icon:'✅',title:'Die Astregel — auch hier!',
+            text:'Die Astregel gilt <strong>genauso</strong> bei Bäumen ohne Zurücklegen. Aber Achtung: Die Äste auf der <strong>zweiten Stufe sind unterschiedlich</strong> — je nachdem, was im ersten Zug passiert ist!<pre style="background:#1a1612;color:#f0e8f7;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto"><strong style="color:#b08fd6">Astregel prüfen (2B, 4W, OHNE Zurücklegen):</strong>\n\n1. Stufe:  B(2/6) + W(4/6) = 6/6 = <strong style="color:#7dbfa0">1 ✓</strong>\n\n2. Stufe nach B: B(1/5) + W(4/5) = 5/5 = <strong style="color:#7dbfa0">1 ✓</strong>\n2. Stufe nach W: B(2/5) + W(3/5) = 5/5 = <strong style="color:#7dbfa0">1 ✓</strong>\n\nPfadkontrolle: 1/15 + 4/15 + 4/15 + 6/15 = 15/15 = <strong style="color:#7dbfa0">1 ✓</strong></pre>',
+            items:[
+              {icon:'⚠️',text:'Häufiger Fehler: In der 2. Stufe die gleichen Werte wie in der 1. Stufe nehmen'},
+              {icon:'💡',text:'Tipp: Immer zuerst die Astregel prüfen — Summe ≠ 1 → sofort Fehler erkannt!'}
+            ]},
+          {icon:'🎯',title:'Typische Fragestellungen',
+            text:'',
+            items:[
+              {icon:'A',text:'p(B dann W) = 2/6 × 4/5 = 4/15'},
+              {icon:'B',text:'p(ein B und ein W, beliebig) = 4/15 + 4/15 = 8/15'},
+              {icon:'C',text:'p(mindestens ein B) = 1 − p(WW) = 1 − 2/5 = 3/5'}
+            ]}
+        ]},
+      {type:'interactive',label:'Schritt 2 · Interaktiv',btnText:'Zum Mini-Quiz →',
+        title:'Mit oder ohne Zurücklegen?',
+        subtitle:'Klicke nur die <strong>richtigen</strong> Aussagen an. Falsche werden rot markiert.',
+        chips:[
+          {text:'Würfel zweimal werfen → MIT Zurücklegen',correct:true},
+          {text:'Zwei Karten nacheinander ziehen, ohne sie zurückzulegen → OHNE',correct:true},
+          {text:'Kugel ziehen, notieren, zurücklegen, nochmal ziehen → MIT',correct:true},
+          {text:'Spinner zweimal drehen → OHNE Zurücklegen',correct:false},
+          {text:'Zwei Bonbons aus einer Tüte nehmen → OHNE Zurücklegen',correct:true},
+          {text:'Lottozahlen ziehen → OHNE Zurücklegen',correct:true}
+        ],
+        explainer:'Entscheidend ist: Wird das Objekt nach dem Zug zurückgelegt oder nicht? Ein Spinner oder Würfel ändert sich nicht — das ist wie MIT Zurücklegen.'
+      },
+      {type:'quiz',label:'Schritt 3 · Mini-Quiz',
+        questions:[
+          {q:'Beutel mit 3 orangen und 4 lila Chips. Ziehung OHNE Zurücklegen. p(zwei orange)?',opts:['9/49','6/42','3/21','6/49'],correct:1,
+            ok:'Richtig! p(O₁) = 3/7, p(O₂|O₁) = 2/6 = 1/3. p(OO) = 3/7 × 1/3 = 3/21 = 1/7. Hmm, prüfen wir: 3/7 × 2/6 = 6/42 = 1/7.',fail:'p(O₁) = 3/7, nach orange gezogen nur noch 2 von 6. p(OO) = 3/7 × 2/6 = 6/42.'},
+          {q:'Gleiche Situation. p(mindestens ein lila Chip)?',opts:['4/7','40/42','36/42','6/7'],correct:3,
+            ok:'Korrekt! p(mindestens 1 lila) = 1 − p(OO) = 1 − 1/7 = 6/7.',fail:'p(mindestens 1 lila) = 1 − p(zwei orange) = 1 − 1/7 = 6/7.'}
+        ]}
+    ]
+  },
+  anwend:{
+    emoji:'🌍',tag:'Stufe 5',title:'Anwendungen &\nbedingte Wahrscheinlichkeit',subtitle:'Mehrstufige Baumdiagramme in realen Situationen',
+    steps:[
+      {type:'theory',label:'Schritt 1 · Theorie',btnText:'Weiter zu den Beispielen →',
+        content:[
+          {icon:'📺',title:'Beispiel: Dina liest oder schaut TV',
+            text:'Dina liest (1/4) oder schaut TV (3/4). Beim Fernsehen schläft sie mit p = 4/7 ein, beim Lesen mit p = 3/7.<pre style="background:#1a1612;color:#faf3e0;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Start\n ├─ TV (3/4)\n │    ├─ schläft ein (4/7)    → 3/4 × 4/7 = <strong style="color:#d4b96a">12/28</strong>\n │    └─ bleibt wach (3/7)    → 3/4 × 3/7 = 9/28\n └─ Buch (1/4)\n      ├─ schläft ein (3/7)    → 1/4 × 3/7 = <strong style="color:#d4b96a">3/28</strong>\n      └─ bleibt wach (4/7)    → 1/4 × 4/7 = 4/28</pre>',
+            items:[
+              {icon:'→',text:'p(TV und einschlafen) = 12/28 = 3/7'},
+              {icon:'→',text:'p(Buch und einschlafen) = 3/28'},
+              {icon:'✓',text:'p(einschlafen total) = 12/28 + 3/28 = 15/28'},
+              {icon:'✓',text:'p(nicht einschlafen) = 9/28 + 4/28 = 13/28'}
+            ]},
+          {icon:'🏫',title:'Beispiel: Helga verschläft',
+            text:'Helga verschläft mit p = 1/5. Wenn sie verschläft, reisst ihr Schnürsenkel mit p = 2/3. Wenn nicht, mit p = 1/6. Gerissener Schnürsenkel → zu spät.<pre style="background:#1a1612;color:#faf3e0;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto">Start\n ├─ verschläft (1/5)\n │    ├─ Senkel reisst (2/3)  → 1/5 × 2/3 = <strong style="color:#d4b96a">2/15 → ZU SPÄT</strong>\n │    └─ Senkel hält (1/3)    → 1/5 × 1/3 = 1/15\n └─ pünktlich auf (4/5)\n      ├─ Senkel reisst (1/6)  → 4/5 × 1/6 = <strong style="color:#d4b96a">4/30 = 2/15 → ZU SPÄT</strong>\n      └─ Senkel hält (5/6)    → 4/5 × 5/6 = 20/30</pre>',
+            items:[
+              {icon:'→',text:'p(zu spät) = 2/15 + 2/15 = 4/15'},
+              {icon:'📊',text:'In 30 Tagen: Erwartung = 30 × 4/15 = 8 Mal zu spät'}
+            ]},
+          {icon:'📊',title:'Wahrscheinlichkeiten und Risiko',
+            text:'Wahrscheinlichkeiten begegnen uns im Alltag als <strong>Risiko-Angaben</strong>. Ein Risiko von 400 × 10⁻⁷ pro Person pro Jahr bedeutet eine jährliche Wahrscheinlichkeit von 0.00004 oder etwa "1 von 25\'000".',
+            items:[
+              {icon:'⚠️',text:'Bevölkerungsrisiko vs. Teilnehmer-Risiko unterscheiden!'},
+              {icon:'💡',text:'Per-capita-Zahlen "verdünnen" Aktivitätsrisiken'}
+            ]}
+        ]},
+      {type:'interactive',label:'Schritt 2 · Interaktiv',btnText:'Zum Mini-Quiz →',
+        title:'Waschmaschine (p=0.27) & Fernseher (p=0.17) — unabhängig',
+        subtitle:'Klicke nur die <strong>richtigen</strong> Berechnungen an. Falsche werden rot markiert.',
+        chips:[
+          {text:'p(beide kaputt) = 0.27 × 0.17 = 0.0459',correct:true},
+          {text:'p(keines kaputt) = 0.73 × 0.83 = 0.6059',correct:true},
+          {text:'p(mindestens eines kaputt) = 1 − 0.6059 = 0.3941',correct:true},
+          {text:'p(beide kaputt) = 0.27 + 0.17 = 0.44',correct:false},
+          {text:'p(nur Waschmaschine kaputt) = 0.27 × 0.83 = 0.2241',correct:true}
+        ],
+        explainer:'Bei unabhängigen Ereignissen: p(A und B) = p(A) × p(B). Für "mindestens eines" nutzt man das Komplement: 1 − p(keines).'
+      },
+      {type:'quiz',label:'Schritt 3 · Mini-Quiz',
+        questions:[
+          {q:'Dina: p(TV) = 3/4, p(einschlafen|TV) = 4/7. Wie gross ist p(TV und nicht einschlafen)?',opts:['3/7','9/28','12/28','3/28'],correct:1,
+            ok:'Genau! p(TV und wach) = 3/4 × 3/7 = 9/28.',fail:'p(TV und wach) = 3/4 × (1 − 4/7) = 3/4 × 3/7 = 9/28.'},
+          {q:'In 30 Schultagen: Wie oft erwartet man, dass Helga zu spät kommt (p = 4/15)?',opts:['4','6','8','10'],correct:2,
+            ok:'Korrekt! Erwartungswert = 30 × 4/15 = 8.',fail:'Erwartungswert = 30 × 4/15 = 120/15 = 8.'}
+        ]}
+    ]
+  },
+  monty:{
+    emoji:'🚪',tag:'Stufe 6',title:'Das Monty-Hall-\nProblem',subtitle:'Wechseln oder bleiben? Die berühmteste Wahrscheinlichkeitsfrage',
+    steps:[
+      {type:'theory',label:'Schritt 1 · Theorie',btnText:'Weiter zu den Beispielen →',
+        content:[
+          {icon:'🚪',title:'Die Spielshow',
+            text:'Du bist in einer Gameshow. Vor dir stehen <strong>3 Türen</strong>. Hinter einer ist ein Auto, hinter den anderen zwei sind Ziegen. Du wählst eine Tür. Der Moderator — <strong>der weiss, wo das Auto steht</strong> — öffnet dann eine der anderen Türen, hinter der eine Ziege ist. Er fragt: <em>Willst du bei deiner Wahl bleiben oder zur anderen geschlossenen Tür wechseln?</em>',
+            items:[
+              {icon:'❓',text:'Die meisten denken: 50:50 — es sind ja noch 2 Türen übrig!'},
+              {icon:'💡',text:'Aber das ist FALSCH. Wechseln ist deutlich besser!'}
+            ]},
+          {icon:'🧮',title:'Alle 3 Fälle durchgespielt',
+            text:'Angenommen du wählst immer <strong>Tür 1</strong>. Das Auto ist gleichwahrscheinlich hinter Tür 1, 2 oder 3.<pre style="background:#1a1612;color:#e6f3f3;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto"><strong style="color:#7dbcba">Fall 1: Auto hinter Tür 1 (deine Wahl)</strong>\n  Du wählst Tür 1 (= Auto!)\n  Moderator öffnet Tür 2 oder 3 (beide Ziegen)\n  → Bleiben: ✅ GEWINN\n  → Wechseln: ❌ Ziege\n\n<strong style="color:#7dbcba">Fall 2: Auto hinter Tür 2</strong>\n  Du wählst Tür 1 (= Ziege)\n  Moderator MUSS Tür 3 öffnen (Ziege)\n  → Bleiben: ❌ Ziege\n  → Wechseln zu Tür 2: ✅ GEWINN\n\n<strong style="color:#7dbcba">Fall 3: Auto hinter Tür 3</strong>\n  Du wählst Tür 1 (= Ziege)\n  Moderator MUSS Tür 2 öffnen (Ziege)\n  → Bleiben: ❌ Ziege\n  → Wechseln zu Tür 3: ✅ GEWINN</pre>',
+            items:[
+              {icon:'📊',text:'Bleiben gewinnt: 1 von 3 Fällen → p = 1/3'},
+              {icon:'📊',text:'Wechseln gewinnt: 2 von 3 Fällen → p = 2/3'},
+              {icon:'🔑',text:'Wechseln ist DOPPELT so gut wie Bleiben!'}
+            ]},
+          {icon:'🔑',title:'Warum funktioniert das?',
+            text:'Der entscheidende Punkt: <strong>Der Moderator handelt nicht zufällig!</strong> Er weiss, wo das Auto ist und öffnet IMMER eine Ziegen-Tür. Dadurch gibt er dir Information.',
+            items:[
+              {icon:'1️⃣',text:'Deine erste Wahl trifft in 1/3 der Fälle das Auto'},
+              {icon:'2️⃣',text:'In 2/3 der Fälle ist das Auto also NICHT hinter deiner Tür'},
+              {icon:'3️⃣',text:'Der Moderator eliminiert eine falsche Tür → die ganzen 2/3 konzentrieren sich auf die eine verbleibende Tür!'},
+              {icon:'💡',text:'Stell dir vor: Du könntest statt deiner einen Tür BEIDE anderen Türen wählen — das ist genau, was Wechseln dir gibt!'}
+            ]},
+          {icon:'🔢',title:'Erweiterung: Mehr Türen',
+            text:'Wichtig: Es gibt <strong>zwei Varianten</strong> des Problems bei n Türen!<br><br><strong>Variante A:</strong> Der Moderator öffnet <em>alle</em> Ziegen-Türen bis auf eine (= klassisches Monty Hall). Dann konzentriert sich alles auf die eine verbleibende Tür:<pre style="background:#1a1612;color:#e6f3f3;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto"><strong style="color:#7dbcba">Variante A: n−2 Türen werden geöffnet (1 bleibt übrig)</strong>\nTüren  │ Bleiben  │ Wechseln\n───────┼──────────┼──────────\n   3   │  1/3     │  2/3\n   4   │  1/4     │  3/4\n   5   │  1/5     │  4/5\n  10   │  1/10    │  9/10\n 100   │  1/100   │  99/100    ← fast sicher!\n   n   │  1/n     │  (n−1)/n</pre><br><strong>Variante B:</strong> Der Moderator öffnet <em>nur 1</em> Ziegen-Tür (es bleiben n−2 Türen übrig). Wechseln ist immer noch besser, aber der Vorteil ist viel kleiner:<pre style="background:#1a1612;color:#e6f3f3;padding:16px;border-radius:12px;font-size:.82rem;line-height:1.6;margin-top:12px;overflow-x:auto"><strong style="color:#7dbcba">Variante B: Nur 1 Tür wird geöffnet (n−2 bleiben übrig)</strong>\nTüren  │ Bleiben  │ Wechseln (auf zufällige der n−2)\n───────┼──────────┼──────────────────────────────────\n   3   │  1/3     │  2/3        (nur 1 andere → klar)\n   4   │  1/4     │  3/4 ÷ 2 = 3/8 pro Tür\n   5   │  1/5     │  4/5 ÷ 3 = 4/15 pro Tür\n  10   │  1/10    │  9/10 ÷ 8 = 9/80 pro Tür\n 100   │  1/100   │  99/100 ÷ 98 ≈ 1/99 pro Tür</pre>',
+            items:[
+              {icon:'⚠️',text:'Variante A (alle bis auf 1 öffnen): Wechseln wird mit mehr Türen IMMER besser'},
+              {icon:'⚠️',text:'Variante B (nur 1 öffnen): Wechseln hilft kaum noch bei vielen Türen — die Wahrscheinlichkeit verteilt sich auf viele übrige Türen'},
+              {icon:'💡',text:'Der Schlüssel: Wie viel Information gibt der Moderator preis?'}
+            ]}
+        ]},
+      {type:'interactive',label:'Schritt 2 · Interaktiv',btnText:'Zum Mini-Quiz →',
+        title:'Monty Hall — richtig oder falsch?',
+        subtitle:'Klicke nur die <strong>richtigen</strong> Aussagen an. Falsche werden rot markiert.',
+        chips:[
+          {text:'Man sollte immer wechseln',correct:true},
+          {text:'Bleiben und Wechseln sind gleichwahrscheinlich (50:50)',correct:false},
+          {text:'Der Moderator öffnet immer eine Tür mit einer Ziege',correct:true},
+          {text:'Wechseln bringt bei 3 Türen p(Auto) = 2/3',correct:true},
+          {text:'Bei 100 Türen und 98 geöffneten ist Wechseln fast sicher ein Gewinn',correct:true},
+          {text:'Das Ergebnis hängt davon ab, welche Tür man zuerst wählt',correct:false}
+        ],
+        explainer:'Wechseln ist immer die bessere Strategie! Der Schlüssel: Der Moderator gibt dir Information, weil er WEISS, wo das Auto steht.'
+      },
+      {type:'quiz',label:'Schritt 3 · Mini-Quiz',
+        questions:[
+          {q:'Beim Monty-Hall-Problem (3 Türen): Wie gross ist p(Auto) beim Wechseln?',opts:['1/3','1/2','2/3','3/4'],correct:2,
+            ok:'Richtig! Wechseln gibt p(Auto) = 2/3.',fail:'Beim Wechseln: p(Auto) = 2/3, beim Bleiben nur 1/3.'},
+          {q:'Bei 5 Türen (3 werden geöffnet): p(Auto) beim Wechseln?',opts:['1/5','2/5','3/5','4/5'],correct:3,
+            ok:'Genau! Bleiben = 1/5. Die restlichen 4/5 konzentrieren sich auf die eine verbleibende Tür → Wechseln = 4/5.',fail:'Bei 5 Türen: Bleiben = 1/5, Wechseln = (n−1)/n = 4/5.'},
+          {q:'Warum funktioniert der "Trick"?',opts:['Der Moderator rät zufällig','Der Moderator weiss, wo das Auto ist','Man hat einfach Glück','Die Türen sind manipuliert'],correct:1,
+            ok:'Genau! Weil der Moderator WEISS, wo das Auto steht, gibt sein Öffnen dir Information.',fail:'Der Schlüssel: Der Moderator weiss, wo das Auto ist, und öffnet IMMER eine Ziegen-Tür. Das gibt dir Information!'}
+        ]}
+    ]
+  }
+};
+
+const finalQuizQuestions=[
+  {type:'mc',scale:'grund',theoryLink:{scale:'grund',blockTitle:'Was ist Wahrscheinlichkeit?'},
+    q:'Welchen Wert hat p(A) für ein unmögliches Ereignis?',opts:['−1','0','0.5','1'],correct:1,
+    ok:'Richtig! Ein unmögliches Ereignis hat p = 0.',fail:'Ein unmögliches Ereignis hat p(A) = 0.'},
+  {type:'tf',scale:'grund',theoryLink:{scale:'grund',blockTitle:'Das Gegenereignis p(Ā)'},
+    q:'p(A) + p(Ā) = 2',correct:false,
+    ok:'Korrekt! p(A) + p(Ā) = 1, nicht 2.',fail:'Falsch: p(A) + p(Ā) = 1, immer.'},
+  {type:'blank',scale:'grund',theoryLink:{scale:'grund',blockTitle:'Das Gegenereignis p(Ā)'},
+    q:'Wenn p(A) = 0.7, dann ist p(Ā) = ___',answer:'0.3',
+    ok:'Genau! p(Ā) = 1 − 0.7 = 0.3.',fail:'p(Ā) = 1 − p(A) = 1 − 0.7 = 0.3.'},
+  {type:'mc',scale:'regeln',theoryLink:{scale:'regeln',blockTitle:'Multiplikationsregel ("und")'},
+    q:'Welche Regel gilt für p(A und B) bei unabhängigen Ereignissen?',opts:['p(A) + p(B)','p(A) × p(B)','p(A) − p(B)','p(A) / p(B)'],correct:1,
+    ok:'Richtig! Bei unabhängigen Ereignissen: p(A und B) = p(A) × p(B).',fail:'Für unabhängige Ereignisse gilt die Multiplikationsregel: p(A und B) = p(A) × p(B).'},
+  {type:'mc',scale:'mitz',theoryLink:{scale:'mitz',blockTitle:'Die Astregel — dein Fehlercheck'},
+    q:'Dieser Baum enthält einen Fehler. Welcher Ast ist falsch?<pre style="background:#1a1612;color:#e8f0fb;padding:14px;border-radius:10px;font-size:.8rem;line-height:1.5;margin:10px 0;overflow-x:auto">Start (3 rote, 5 blaue Kugeln, MIT Zurücklegen)\n ├─ rot (3/8)\n │    ├─ rot (3/8)  → RR = 9/64\n │    └─ blau (5/8) → RB = 15/64\n └─ blau (4/8)\n      ├─ rot (3/8)  → BR = 12/64\n      └─ blau (5/8) → BB = 20/64</pre>',
+    opts:['rot (3/8) im 1. Ast','blau (5/8) im 2. Ast','blau (4/8) — müsste 5/8 sein','rot (3/8) im unteren Ast'],correct:2,
+    ok:'Genau! p(blau) = 5/8, nicht 4/8. Die Astregel verrät es: 3/8 + 4/8 = 7/8 ≠ 1!',fail:'Prüfe die Astregel: 3/8 + 4/8 = 7/8 ≠ 1. Der Ast "blau (4/8)" müsste 5/8 sein.'},
+  {type:'mc',scale:'mitz',theoryLink:{scale:'mitz',blockTitle:'Die Astregel — dein Fehlercheck'},
+    q:'Welchen Wert hat p(RR) in diesem Baum?<pre style="background:#1a1612;color:#e8f0fb;padding:14px;border-radius:10px;font-size:.8rem;line-height:1.5;margin:10px 0;overflow-x:auto">Start (4 rote, 6 blaue, MIT Zurücklegen)\n ├─ R (4/10)\n │    ├─ R (4/10) → RR = ?\n │    └─ B (6/10) → RB = 24/100\n └─ B (6/10)\n      ├─ R (4/10) → BR = 24/100\n      └─ B (6/10) → BB = 36/100</pre>',
+    opts:['4/100','8/100','16/100','24/100'],correct:2,
+    ok:'Richtig! p(RR) = 4/10 × 4/10 = 16/100.',fail:'Pfadregel: p(RR) = 4/10 × 4/10 = 16/100.'},
+  {type:'mc',scale:'ohnez',theoryLink:{scale:'ohnez',blockTitle:'Was ändert sich ohne Zurücklegen?'},
+    q:'Dieser Baum zeigt eine Ziehung OHNE Zurücklegen. Welcher Wert ist falsch?<pre style="background:#1a1612;color:#f0e8f7;padding:14px;border-radius:10px;font-size:.8rem;line-height:1.5;margin:10px 0;overflow-x:auto">Start (3 grüne, 2 rote = 5 total)\n ├─ G (3/5)\n │    ├─ G (2/4) → GG = 6/20\n │    └─ R (2/4) → GR = 6/20\n └─ R (2/5)\n      ├─ G (3/4) → RG = 6/20\n      └─ R (2/4) → RR = 4/20</pre>',
+    opts:['G (2/4) — müsste 3/4 sein','R (2/4) nach G — ist korrekt','R (2/4) nach R — müsste 1/4 sein','G (3/4) nach R — ist korrekt'],correct:2,
+    ok:'Genau! Nach R gezogen: nur noch 1R von 4 übrig. Also p(R) = 1/4, nicht 2/4. Astregel: 3/4 + 2/4 = 5/4 ≠ 1!',fail:'Nach dem Ziehen von R: 3G + 1R = 4 Kugeln übrig. p(R) = 1/4, nicht 2/4. Die Astregel zeigt den Fehler: 3/4 + 2/4 = 5/4 > 1!'},
+  {type:'blank',scale:'ohnez',theoryLink:{scale:'ohnez',blockTitle:'Was ändert sich ohne Zurücklegen?'},
+    q:'6 Kugeln (2B, 4W), OHNE Zurücklegen. p(WW) = 4/6 × 3/5 = ___/30',answer:'12',
+    ok:'Genau! 4/6 × 3/5 = 12/30.',fail:'4 × 3 = 12. Also 12/30.'},
+  {type:'mc',scale:'anwend',theoryLink:{scale:'anwend',blockTitle:'Beispiel: Dina liest oder schaut TV'},
+    q:'Lies den Baum ab: Wie gross ist p(einschlafen)?<pre style="background:#1a1612;color:#faf3e0;padding:14px;border-radius:10px;font-size:.8rem;line-height:1.5;margin:10px 0;overflow-x:auto">Start\n ├─ TV (3/4)\n │    ├─ schläft ein (4/7)  → 12/28\n │    └─ bleibt wach (3/7)  → 9/28\n └─ Buch (1/4)\n      ├─ schläft ein (3/7)  → 3/28\n      └─ bleibt wach (4/7)  → 4/28</pre>',
+    opts:['12/28','3/28','15/28','9/28'],correct:2,
+    ok:'Richtig! p(einschlafen) = 12/28 + 3/28 = 15/28. Beide Pfade zum Einschlafen addieren!',fail:'Summenregel: Alle Pfade die zu "einschlafen" führen addieren: 12/28 + 3/28 = 15/28.'},
+  {type:'tf',scale:'anwend',theoryLink:{scale:'anwend',blockTitle:'Wahrscheinlichkeiten und Risiko'},
+    q:'Bevölkerungsrisiko und Teilnehmerrisiko sind dasselbe.',correct:false,
+    ok:'Korrekt! Bevölkerungsrisiko bezieht alle ein, Teilnehmerrisiko nur die Exponierten.',fail:'Nein — Bevölkerungsrisiko zählt alle, Teilnehmerrisiko nur die tatsächlich Exponierten.'},
+  {type:'mc',scale:'mitz',theoryLink:{scale:'mitz',blockTitle:'Die Astregel — dein Fehlercheck'},
+    q:'Dieser Baum zeigt Buchstaben-Würfel (A–F, Vokale: A,E). Wie gross ist p(ein Vokal und ein Konsonant, beliebige Reihenfolge)?<pre style="background:#1a1612;color:#e8f0fb;padding:14px;border-radius:10px;font-size:.8rem;line-height:1.5;margin:10px 0;overflow-x:auto">Start\n ├─ V (2/6 = 1/3)\n │    ├─ V (1/3) → VV = 1/9\n │    └─ K (2/3) → VK = 2/9\n └─ K (4/6 = 2/3)\n      ├─ V (1/3) → KV = 2/9\n      └─ K (2/3) → KK = 4/9</pre>',
+    opts:['2/9','4/9','1/9','5/9'],correct:1,
+    ok:'Richtig! p(VK) + p(KV) = 2/9 + 2/9 = 4/9.',fail:'Beide Pfade addieren: p(VK) + p(KV) = 2/9 + 2/9 = 4/9.'},
+  {type:'mc',scale:'monty',theoryLink:{scale:'monty',blockTitle:'Alle 3 Fälle durchgespielt'},
+    q:'Monty Hall (3 Türen): Wie gross ist p(Auto) beim Bleiben?',opts:['1/2','1/3','2/3','1/4'],correct:1,
+    ok:'Richtig! Beim Bleiben: p(Auto) = 1/3.',fail:'Beim Bleiben bleibt die Chance bei 1/3.'},
+  {type:'mc',scale:'monty',theoryLink:{scale:'monty',blockTitle:'Erweiterung: Mehr Türen'},
+    q:'10 Türen, Moderator öffnet ALLE 8 Ziegen-Türen (Variante A). p(Auto) beim Wechseln?',opts:['1/10','1/2','8/10','9/10'],correct:3,
+    ok:'Genau! Variante A: Bleiben = 1/10, Wechseln = 9/10.',fail:'Variante A (alle bis auf 1 öffnen): Bleiben = 1/10, Wechseln = (n−1)/n = 9/10.'},
+  {type:'multi',scale:'monty',theoryLink:{scale:'monty',blockTitle:'Warum funktioniert das?'},
+    q:'Warum ist Wechseln besser? (mehrere richtig)',opts:['Der Moderator weiss, wo das Auto ist','Man hat eine 2/3-Chance beim Wechseln','Es ist reiner Zufall','Der Moderator gibt Information durch sein Öffnen'],correct:[0,1,3],
+    ok:'Richtig! Das Wissen des Moderators und die dadurch gegebene Information sind der Schlüssel.',fail:'Drei Aussagen sind korrekt: Der Moderator hat Wissen, es gibt 2/3 Chance beim Wechseln, und sein Öffnen gibt Information.'}
+];
+
+/* ===== FUNCTIONS ===== */
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function goToMap(){showView('view-map');updateMapUI()}
+
+function updateMapUI(){
+  // Progress strip
+  const strip=document.getElementById('progress-strip');
+  strip.innerHTML='';
+  SCALE_ORDER.forEach(s=>{
+    const done=progress[s]>=3;
+    const b=document.createElement('div');
+    b.className='ps-badge'+(done?' done':'');
+    b.style.color=COLORS[s].h;
+    b.innerHTML=`<span class="ps-dot"></span><span class="ps-label">${SCALE_LABELS[s]}</span>`;
+    strip.appendChild(b)
+  });
+  const allDone=SCALE_ORDER.every(s=>progress[s]>=3);
+  const qBadge=document.createElement('div');
+  qBadge.className='ps-badge';
+  qBadge.style.color='#b8860b';
+  qBadge.innerHTML='<span class="ps-dot"></span><span class="ps-label">Quiz</span>';
+  strip.appendChild(qBadge);
+
+  // Island cards
+  const grid=document.getElementById('islands-grid');
+  grid.innerHTML='';
+  SCALE_ORDER.forEach((s,i)=>{
+    const l=lessons[s];const c=COLORS[s];const p=progress[s];
+    const card=document.createElement('div');
+    card.className='island-card rise rise-d'+i;
+    card.onclick=()=>openLesson(s);
+    let pips='';
+    for(let j=0;j<3;j++) pips+=`<div class="step-pip${j<p?' filled':''}" style="color:${c.h}"></div>`;
+    card.innerHTML=`
+      <div class="island-icon">${l.emoji}</div>
+      <div class="island-tag" style="background:${c.l};color:${c.h}">${l.tag}</div>
+      <div class="island-title">${l.title}</div>
+      <div class="island-desc">${l.subtitle}</div>
+      <div class="island-pips">${pips}</div>
+      <div class="island-cta" style="color:${c.h}">${p>=3?'✅ Abgeschlossen':'Erkunden →'}</div>`;
+    grid.appendChild(card)
+  });
+
+  // Quiz card status
+  const doneCount=SCALE_ORDER.filter(s=>progress[s]>=3).length;
+  const qs=document.getElementById('qc-status');
+  if(doneCount>=SCALE_ORDER.length) qs.textContent='✨ Bereit · Alle Inseln abgeschlossen';
+  else qs.textContent=`⚡ Verfügbar · ${doneCount}/${SCALE_ORDER.length} Inseln abgeschlossen`;
+}
+
+function openLesson(scale){
+  currentScale=scale;currentStep=Math.min(progress[scale],2);
+  showView('view-lesson');renderLesson()
+}
+
+function renderLesson(){
+  const l=lessons[currentScale];const c=COLORS[currentScale];
+  let html=`<div class="lesson-header" style="background:${c.h}">
+    <div class="lh-emoji">${l.emoji}</div>
+    <div class="lh-tag">${l.tag}</div>
+    <h2>${l.title.replace('\n','<br>')}</h2>
+    <div class="lh-sub">${l.subtitle}</div>
+  </div>`;
+  html+='<div class="step-pills">';
+  for(let i=0;i<3;i++){
+    let cls='step-pill';
+    if(i<progress[currentScale]) cls+=' done';
+    if(i===currentStep) cls+=' active';
+    html+=`<div class="${cls}" style="color:${c.h}"></div>`;
+  }
+  html+='</div>';
+  html+=`<div id="step-area"></div>`;
+  document.getElementById('lesson-content').innerHTML=html;
+  renderStep(currentStep)
+}
+
+function renderStep(idx){
+  const step=lessons[currentScale].steps[idx];const c=COLORS[currentScale];
+  const area=document.getElementById('step-area');
+  let html=`<div class="step-label">${step.label}</div>`;
+  if(step.type==='theory') html+=renderTheory(step,c);
+  else if(step.type==='interactive') html+=renderInteractive(step,c,idx);
+  else if(step.type==='quiz') html+=renderQuiz(step,c,idx);
+  area.innerHTML=html;
+  if(step.type==='interactive') setupChips(c);
+  if(step.type==='quiz') setupMiniQuiz(step,c,idx);
+}
+
+function renderTheory(step,c){
+  let h='';
+  step.content.forEach((block,i)=>{
+    h+=`<div class="theory-block rise rise-d${i}">
+      <div class="tb-head"><span class="tb-icon">${block.icon}</span><span class="tb-title">${block.title}</span></div>
+      <div class="tb-text">${block.text}</div>`;
+    if(block.items&&block.items.length){
+      h+='<div class="theory-items">';
+      block.items.forEach(it=>{
+        h+=`<div class="theory-item"><span class="ti-icon">${it.icon}</span><span>${it.text}</span></div>`;
+      });
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  h+=`<div class="step-nav"><button class="btn-primary" style="background:${c.h}" onclick="nextStep()">${step.btnText}</button></div>`;
+  return h
+}
+
+function renderInteractive(step,c){
+  const correctCount=step.chips.filter(ch=>ch.correct).length;
+  let h=`<div class="interactive-area">
+    <h3>${step.title}</h3><p class="ia-sub">${step.subtitle}</p>
+    <div class="chips-counter" id="chips-counter" style="font-size:.82rem;color:${c.h};font-weight:600;margin-bottom:14px;padding:8px 14px;border-radius:10px;background:${c.l};display:inline-block">✅ 0 / ${correctCount} richtige gefunden</div>
+    <div class="chips-wrap" id="chips-wrap">`;
+  step.chips.forEach((ch,i)=>{
+    h+=`<div class="chip" data-idx="${i}" data-correct="${ch.correct}">${ch.text}</div>`;
+  });
+  h+=`</div><div class="explainer-box" id="explainer">${step.explainer}</div></div>`;
+  h+=`<div class="step-nav"><button class="btn-primary" style="background:${c.h}" id="step-next-btn" onclick="nextStep()" disabled>${step.btnText}</button></div>`;
+  return h
+}
+
+function setupChips(c){
+  const wrap=document.getElementById('chips-wrap');
+  const allChips=wrap.querySelectorAll('.chip');
+  const totalCorrect=[...allChips].filter(ch=>ch.dataset.correct==='true').length;
+  let foundCorrect=0;
+  const counter=document.getElementById('chips-counter');
+  allChips.forEach(ch=>{
+    ch.addEventListener('click',function(){
+      if(this.classList.contains('picked')) return;
+      this.classList.add('picked');
+      const correct=this.dataset.correct==='true';
+      this.classList.add(correct?'correct':'wrong');
+      if(correct){
+        foundCorrect++;
+        counter.textContent=`✅ ${foundCorrect} / ${totalCorrect} richtige gefunden`;
+      }
+      if(foundCorrect>=totalCorrect){
+        counter.textContent=`🎉 Alle ${totalCorrect} richtigen gefunden!`;
+        document.getElementById('explainer').classList.add('show');
+        document.getElementById('step-next-btn').disabled=false;
+        allChips.forEach(c=>{if(!c.classList.contains('picked')) c.classList.add('picked','wrong')});
+      }
+    })
+  })
+}
+
+function renderQuiz(step,c,stepIdx){
+  let h='';
+  step.questions.forEach((q,qi)=>{
+    h+=`<div class="mini-quiz-q" id="mq-${stepIdx}-${qi}">
+      <div class="mq-text">${q.q}</div><div class="mq-opts">`;
+    q.opts.forEach((o,oi)=>{
+      h+=`<div class="mq-opt" data-qi="${qi}" data-oi="${oi}">${o}</div>`;
+    });
+    h+=`</div><div class="mq-feedback" id="mqf-${stepIdx}-${qi}"></div></div>`;
+  });
+  h+=`<div class="step-nav"><button class="btn-primary" style="background:${c.h}" id="step-next-btn" onclick="nextStep()" disabled>Insel abschliessen ✓</button></div>`;
+  return h
+}
+
+function setupMiniQuiz(step,c,stepIdx){
+  const key=currentScale+'-'+stepIdx;
+  if(!quizAnswered[key]) quizAnswered[key]={};
+  step.questions.forEach((q,qi)=>{
+    const opts=document.querySelectorAll(`#mq-${stepIdx}-${qi} .mq-opt`);
+    opts.forEach(opt=>{
+      opt.addEventListener('click',function(){
+        if(quizAnswered[key][qi]!==undefined) return;
+        const oi=parseInt(this.dataset.oi);
+        const correct=oi===q.correct;
+        quizAnswered[key][qi]=correct;
+        this.classList.add(correct?'chosen-ok':'chosen-fail');
+        opts.forEach(o=>{if(o!==this) o.classList.add('disabled')});
+        if(!correct){
+          const corOpt=opts[q.correct];corOpt.classList.remove('disabled');corOpt.classList.add('chosen-ok');
+        }
+        const fb=document.getElementById(`mqf-${stepIdx}-${qi}`);
+        fb.textContent=correct?q.ok:q.fail;
+        fb.className='mq-feedback show '+(correct?'ok':'fail');
+        // Check all answered
+        const allAnswered=step.questions.every((_,i)=>quizAnswered[key][i]!==undefined);
+        if(allAnswered) document.getElementById('step-next-btn').disabled=false;
+      })
+    })
+  })
+}
+
+function nextStep(){
+  currentStep++;
+  if(currentStep>2){
+    progress[currentScale]=3;
+    goToMap();
+  } else {
+    if(progress[currentScale]<currentStep) progress[currentScale]=currentStep;
+    renderLesson();
+  }
+}
+
+/* ===== FINAL QUIZ ===== */
+let fqAnswers={};
+let fqFromQuiz=false;
+
+function openFinalQuiz(){
+  fqAnswers={};fqFromQuiz=false;
+  showView('view-quiz');renderFinalQuiz()
+}
+
+function renderFinalQuiz(){
+  let html=`<div class="fq-header">
+    <div style="font-size:2.5rem">🏆</div>
+    <h2>Abschlussquiz</h2>
+    <p class="fq-sub">15 Fragen aus allen Inseln</p>
+    <div class="fq-badges">`;
+  SCALE_ORDER.forEach(s=>{
+    html+=`<span class="fq-badge" style="background:${COLORS[s].l};color:${COLORS[s].h}">${SCALE_LABELS[s]}</span>`;
+  });
+  html+=`</div></div>`;
+
+  finalQuizQuestions.forEach((q,qi)=>{
+    const c=COLORS[q.scale];
+    html+=`<div class="fq-card rise rise-d${qi%6}" id="fqc-${qi}">
+      <div class="fq-scale-badge" style="background:${c.l};color:${c.h}">${SCALE_LABELS[q.scale]}</div>
+      <div class="fq-q">${qi+1}. ${q.q}</div>`;
+
+    if(q.type==='mc'){
+      html+='<div class="fq-opts">';
+      q.opts.forEach((o,oi)=>{html+=`<div class="fq-opt" data-qi="${qi}" data-oi="${oi}">${o}</div>`});
+      html+='</div>';
+    } else if(q.type==='tf'){
+      html+=`<div class="fq-tf-opts">
+        <div class="fq-tf-opt" data-qi="${qi}" data-val="true">Wahr</div>
+        <div class="fq-tf-opt" data-qi="${qi}" data-val="false">Falsch</div>
+      </div>`;
+    } else if(q.type==='multi'){
+      html+='<div class="fq-opts">';
+      q.opts.forEach((o,oi)=>{html+=`<div class="fq-multi-opt" data-qi="${qi}" data-oi="${oi}"><input type="checkbox" style="pointer-events:none"> ${o}</div>`});
+      html+=`</div><div style="margin-top:8px"><button class="btn-secondary fq-blank-btn" onclick="submitMulti(${qi})">Antwort prüfen</button></div>`;
+    } else if(q.type==='blank'){
+      html+=`<div><input class="fq-blank-input" id="fq-blank-${qi}" placeholder="Antwort eingeben…">
+        <div><button class="btn-secondary fq-blank-btn" onclick="submitBlank(${qi})">Prüfen</button></div></div>`;
+    }
+    html+=`<div class="fq-feedback" id="fqf-${qi}"></div>
+      <div class="fq-theorylink" onclick="openTheoryFromQuiz(${qi})">📖 Theorie nochmals anschauen</div>
+    </div>`;
+  });
+
+  html+=`<div class="step-nav" style="margin-top:24px">
+    <button class="btn-primary" style="background:#b8860b" id="fq-submit" onclick="submitFinalQuiz()" disabled>Auswertung anzeigen</button>
+  </div>
+  <div class="quiz-result" id="quiz-result"></div>`;
+
+  document.getElementById('quiz-content').innerHTML=html;
+  setupFinalQuiz()
+}
+
+function setupFinalQuiz(){
+  // MC
+  document.querySelectorAll('.fq-opt:not(.fq-multi-opt)').forEach(opt=>{
+    opt.addEventListener('click',function(){
+      const qi=parseInt(this.dataset.qi);
+      if(fqAnswers[qi]!==undefined) return;
+      const q=finalQuizQuestions[qi];if(q.type!=='mc') return;
+      const oi=parseInt(this.dataset.oi);
+      const correct=oi===q.correct;
+      fqAnswers[qi]=correct;
+      this.classList.add(correct?'chosen-ok':'chosen-fail');
+      const siblings=document.querySelectorAll(`.fq-opt[data-qi="${qi}"]`);
+      siblings.forEach(s=>{if(s!==this) s.classList.add('disabled')});
+      if(!correct) siblings[q.correct].classList.remove('disabled'),siblings[q.correct].classList.add('reveal-correct');
+      showFqFeedback(qi,correct);checkAllFqAnswered()
+    })
+  });
+  // TF
+  document.querySelectorAll('.fq-tf-opt').forEach(opt=>{
+    opt.addEventListener('click',function(){
+      const qi=parseInt(this.dataset.qi);
+      if(fqAnswers[qi]!==undefined) return;
+      const q=finalQuizQuestions[qi];
+      const val=this.dataset.val==='true';
+      const correct=val===q.correct;
+      fqAnswers[qi]=correct;
+      this.classList.add(correct?'chosen-ok':'chosen-fail');
+      const siblings=document.querySelectorAll(`.fq-tf-opt[data-qi="${qi}"]`);
+      siblings.forEach(s=>{if(s!==this) s.classList.add('disabled')});
+      if(!correct){
+        siblings.forEach(s=>{if(s.dataset.val===String(q.correct)) s.classList.add('reveal-correct')});
+      }
+      showFqFeedback(qi,correct);checkAllFqAnswered()
+    })
+  });
+  // Multi select
+  document.querySelectorAll('.fq-multi-opt').forEach(opt=>{
+    opt.addEventListener('click',function(){
+      const qi=parseInt(this.dataset.qi);
+      if(fqAnswers[qi]!==undefined) return;
+      this.classList.toggle('selected');
+      const cb=this.querySelector('input');cb.checked=!cb.checked;
+    })
+  })
+}
+
+function submitMulti(qi){
+  if(fqAnswers[qi]!==undefined) return;
+  const q=finalQuizQuestions[qi];
+  const opts=document.querySelectorAll(`.fq-multi-opt[data-qi="${qi}"]`);
+  const selected=[];
+  opts.forEach((o,i)=>{if(o.classList.contains('selected')) selected.push(i)});
+  const correct=JSON.stringify(selected.sort())===JSON.stringify([...q.correct].sort());
+  fqAnswers[qi]=correct;
+  opts.forEach((o,i)=>{
+    o.classList.add('disabled');
+    if(q.correct.includes(i)) o.classList.add('reveal-correct');
+    else if(selected.includes(i)) o.classList.add('reveal-wrong');
+  });
+  showFqFeedback(qi,correct);checkAllFqAnswered()
+}
+
+function submitBlank(qi){
+  if(fqAnswers[qi]!==undefined) return;
+  const q=finalQuizQuestions[qi];
+  const input=document.getElementById(`fq-blank-${qi}`);
+  const val=input.value.trim();
+  const correct=val.toLowerCase()===q.answer.toLowerCase();
+  fqAnswers[qi]=correct;
+  input.disabled=true;
+  input.style.borderColor=correct?'#27ae60':'#c0392b';
+  input.style.background=correct?'#e8f8ef':'#fbe8e6';
+  showFqFeedback(qi,correct);checkAllFqAnswered()
+}
+
+function showFqFeedback(qi,correct){
+  const q=finalQuizQuestions[qi];
+  const fb=document.getElementById(`fqf-${qi}`);
+  fb.textContent=correct?q.ok:q.fail;
+  fb.className='fq-feedback show '+(correct?'ok':'fail')
+}
+
+function checkAllFqAnswered(){
+  const all=finalQuizQuestions.every((_,i)=>fqAnswers[i]!==undefined);
+  document.getElementById('fq-submit').disabled=!all
+}
+
+function submitFinalQuiz(){
+  let score=0;
+  const byScale={};
+  SCALE_ORDER.forEach(s=>{byScale[s]={total:0,correct:0}});
+  finalQuizQuestions.forEach((q,i)=>{
+    byScale[q.scale].total++;
+    if(fqAnswers[i]){score++;byScale[q.scale].correct++}
+  });
+  let emoji='🏆',label='Ausgezeichnet!',msg='Du beherrschst die Wahrscheinlichkeiten perfekt!';
+  if(score<13){emoji='🌟';label='Sehr gut!';msg='Fast perfekt — schau dir die Fehler nochmal an.'}
+  if(score<10){emoji='💪';label='Gut gemacht!';msg='Wiederhole die schwierigen Inseln und versuche es nochmal.'}
+  if(score<7){emoji='📚';label='Weiter üben!';msg='Geh nochmal durch die Theorie und versuche es erneut.'}
+
+  let bd='';
+  SCALE_ORDER.forEach(s=>{
+    const d=byScale[s];
+    bd+=`<div class="qr-bd-item" style="background:${COLORS[s].l};color:${COLORS[s].h}">${SCALE_LABELS[s]}: ${d.correct}/${d.total}</div>`;
+  });
+
+  const r=document.getElementById('quiz-result');
+  r.innerHTML=`<div class="qr-emoji">${emoji}</div>
+    <div class="qr-score">${score}/15</div>
+    <div class="qr-label">${label}</div>
+    <div class="qr-msg">${msg}</div>
+    <div class="qr-breakdown">${bd}</div>
+    <div class="qr-btns">
+      <button class="btn-primary" style="background:#b8860b" onclick="goToMap()">Zur Karte</button>
+      <button class="btn-secondary" onclick="openFinalQuiz()">Nochmal versuchen</button>
+    </div>`;
+  r.classList.add('show');
+  r.scrollIntoView({behavior:'smooth'})
+}
+
+/* Theory from Quiz */
+function openTheoryFromQuiz(qi){
+  const q=finalQuizQuestions[qi];
+  fqFromQuiz=qi;
+  currentScale=q.theoryLink.scale;
+  currentStep=0;
+  showView('view-lesson');
+  renderLesson();
+  injectBackToQuizBanner(qi)
+}
+
+function injectBackToQuizBanner(qi){
+  const lc=document.getElementById('lesson-content');
+  const banner=document.createElement('div');
+  banner.className='back-to-quiz-banner';
+  banner.innerHTML=`<span>← Zurück zu Quizfrage ${qi+1}</span><span>Klicken</span>`;
+  banner.onclick=()=>returnToQuiz(qi);
+  lc.insertBefore(banner,lc.firstChild.nextSibling)
+}
+
+function returnToQuiz(qi){
+  fqFromQuiz=false;
+  showView('view-quiz');
+  setTimeout(()=>{
+    const card=document.getElementById(`fqc-${qi}`);
+    if(card) card.scrollIntoView({behavior:'smooth',block:'center'})
+  },100)
+}
+
+/* ===== EXERCISE: VIRUS TEST ===== */
+const exAnswers={};
+const exCorrect={a:1,b:1,c:2,d:1,la:1,lb:1,lc:2,bg:2,b1:1,b2:2,b3:1,r1:1,r2:2,r3:0,r4:1};
+const exOk={
+  a:'Richtig! p(infiziert UND positiv) = 0.004 × 0.85 = 0.0034. Das ist der obere linke Pfad im Baumdiagramm.',
+  b:'Genau! p(infiziert UND negativ) = 0.004 × 0.15 = 0.0006. Ein sehr kleiner Wert — die meisten infizierten Schafe werden erkannt.',
+  c:'Korrekt! p(positiv) = 0.0034 + 0.0498 = 0.0532. Beide Pfade, die zu "positiv" führen, werden addiert (Summenregel).',
+  d:'Genau richtig! Bei nur 6.4% Chance auf eine echte Infektion ist ein Bestätigungstest der sinnvollste Schritt. Sofort behandeln wäre übertrieben, ignorieren wäre fahrlässig.',
+  la:'Richtig! Der Aufzug muss erst zum 2. Stock hoch (3/4), dann weiter zum 3. Stock (3/4). P = 3/4 × 3/4 = 9/16.',
+  lb:'Genau! Dreimal hintereinander hoch: 1→2→3→4. P = 3/4 × 3/4 × 3/4 = 27/64 ≈ 0.422.',
+  lc:'Korrekt! Es gibt 5 Pfade zum 1. Stock: 1/16 + 3/64 + 3/64 + 9/256 + 9/256 = 58/256 = 29/128 ≈ 0.227.',
+  bg:'Genau — nur 23! Das überrascht fast alle. Schauen wir uns an, warum das so ist.',
+  b1:'Genau! "Mindestens ein Match" kann 1 Paar, 2 Paare, Drillinge usw. sein — extrem viele Fälle. "Alle verschieden" ist nur EIN einziger Pfad im Baumdiagramm. Deshalb: P(Match) = 1 − P(alle verschieden).',
+  b2:'Richtig! Bei 50 Personen ist P(Match) ≈ 97%. Das wächst viel schneller als man denkt!',
+  b3:'Genau! Schon bei etwa 70 Personen ist P(Match) > 99.9%. Man braucht bei weitem nicht 365 Personen!',
+  r1:'Richtig! Mit 0.0006 × 10⁻⁷ ist der Meteorit astronomisch (!) unwahrscheinlich — etwa 1 von 16.7 Milliarden pro Jahr.',
+  r2:'Genau! 50\'000 ÷ 400 = 125. Rauchen ist 125× gefährlicher als Klettern — gemäss diesen Bevölkerungszahlen.',
+  r3:'Korrekt! 1 von 200 = 0.5%. Das heisst: Von 200 Rauchern (20 Zig./Tag) stirbt statistisch einer pro Jahr an den Folgen.',
+  r4:'Genau! Aktivitätsrisiken und Naturereignisse sind NICHT direkt vergleichbar, weil Aktivitätsrisiken nur die Teilnehmenden betreffen, aber auf die gesamte Bevölkerung umgelegt werden.'
+};
+const exFail={
+  a:'Nicht ganz. Lies den entsprechenden Pfad im Baum ab: p(infiziert) × p(positiv|infiziert) = 0.004 × 0.85 = 0.0034.',
+  b:'Schau im Baumdiagramm: p(infiziert UND negativ) = 0.004 × 0.15 = 0.0006.',
+  c:'Summenregel: Alle Pfade zu "positiv" addieren: 0.0034 (infiziert+positiv) + 0.0498 (gesund+positiv) = 0.0532.',
+  d:'Denk an die Falsch-Positiv-Falle: Nur ca. 6.4% der positiv getesteten Schafe sind wirklich infiziert. Ein zweiter Test ist der sinnvollste nächste Schritt.',
+  la:'Denk schrittweise: Vom 1. Stock (↓) geht der Aufzug hoch (3/4) zum 2. Stock. Vom 2. Stock (↑) weiter hoch (3/4) zum 3. Stock. P = 3/4 × 3/4 = 9/16.',
+  lb:'Der einzige Pfad: 1→2→3→4, jeweils mit P(weiter hoch) = 3/4. Also: P = (3/4)³ = 27/64.',
+  lc:'Hier gibt es 5 verschiedene Pfade. Schau dir den Hinweis und das Baumdiagramm genau an! Die Summe ist 58/256 = 29/128.',
+  bg:'Es sind tatsächlich nur 23! Das ist viel weniger als die meisten denken. Schauen wir uns an, warum.',
+  b1:'Der Schlüssel: "Mindestens ein Match" umfasst extrem viele verschiedene Konstellationen. Das Gegenereignis "alle verschieden" ist dagegen nur ein einziger Pfad — viel einfacher zu berechnen.',
+  b2:'Es sind sogar ca. 97%! Bei 50 Personen gibt es 1225 mögliche Paare — die Chance, dass KEIN einziges Paar matcht, ist winzig.',
+  b3:'Schon bei etwa 70 Personen ist P > 99.9%. Schau im Graphen nach — man braucht bei weitem keine 365 Personen!',
+  r1:'Es ist der Meteorit mit 0.0006 × 10⁻⁷ — etwa 1 von 16.7 Milliarden pro Jahr. Noch seltener als Blitzschlag (3) oder Flugzeug (1).',
+  r2:'50\'000 ÷ 400 = 125. Rauchen ist 125× gefährlicher als Klettern — gemäss diesen Bevölkerungszahlen.',
+  r3:'1 von 200 = 1/200 = 0.005 = 0.5%. Nicht 0.05% und nicht 5%.',
+  r4:'Genau diese Aussage ist falsch! Aktivitätsrisiken beziehen nur Teilnehmende ein und werden auf die ganze Bevölkerung verteilt. Das macht sie nicht direkt vergleichbar mit Risiken, die alle betreffen (Erdbeben, Influenza).'
+};
+
+function checkExMC(id,el,choice){
+  if(exAnswers[id]!==undefined) return;
+  const correct=choice===exCorrect[id];
+  exAnswers[id]=correct;
+  el.classList.add('picked',correct?'mc-ok':'mc-fail');
+  const siblings=el.parentElement.querySelectorAll('.ex-mc-opt');
+  siblings.forEach(s=>{if(s!==el){s.classList.add('picked');if(parseInt([...siblings].indexOf(s))===exCorrect[id]) s.classList.add('mc-ok')}});
+  const fb=document.getElementById('exf-'+id);
+  fb.textContent=correct?exOk[id]:exFail[id];
+  fb.className='ex-mc-feedback show '+(correct?'ok':'fail');
+  // Show aha section after A,B,C are answered
+  if(exAnswers.a!==undefined&&exAnswers.b!==undefined&&exAnswers.c!==undefined){
+    const aha=document.getElementById('aha-section');
+    if(aha.style.display==='none'){
+      aha.style.display='block';
+      setTimeout(()=>aha.scrollIntoView({behavior:'smooth',block:'start'}),200);
+      buildSheepGrid();
+    }
+  }
+  // Show why section after D is answered
+  if(id==='d'&&exAnswers.d!==undefined){
+    const why=document.getElementById('why-section');
+    if(why&&why.style.display==='none'){
+      why.style.display='block';
+      setTimeout(()=>why.scrollIntoView({behavior:'smooth',block:'start'}),300);
+    }
+  }
+  // Show lift tree after all lift questions answered
+  if(exAnswers.la!==undefined&&exAnswers.lb!==undefined&&exAnswers.lc!==undefined){
+    const tree=document.getElementById('lift-tree-section');
+    if(tree&&tree.style.display==='none'){
+      tree.style.display='block';
+      setTimeout(()=>{
+        tree.scrollIntoView({behavior:'smooth',block:'start'});
+        const c=document.getElementById('nine-lifts');
+        if(c) c.innerHTML='';
+        nineLiftsInit();
+      },300);
+    }
+  }
+  // Birthday: show explain after guess
+  if(id==='bg'&&exAnswers.bg!==undefined){
+    ['bday-explain','bday-table-section','bday-chart-section','bday-quiz-section'].forEach(sid=>{
+      const el=document.getElementById(sid);
+      if(el&&el.style.display==='none') el.style.display='block';
+    });
+    setTimeout(()=>{
+      document.getElementById('bday-explain').scrollIntoView({behavior:'smooth',block:'start'});
+      bdayReset();
+      bdayDrawChart(23);
+    },200);
+  }
+  // Risk: show sorted table after r1,r2,r3 all answered
+  if(exAnswers.r1!==undefined&&exAnswers.r2!==undefined&&exAnswers.r3!==undefined){
+    const sorted=document.getElementById('risk-sorted-section');
+    if(sorted&&sorted.style.display==='none'){
+      sorted.style.display='block';
+      buildRiskSortedTable();
+      const exp=document.getElementById('risk-exposure-section');
+      if(exp) exp.style.display='block';
+      const disc=document.getElementById('risk-discuss-section');
+      if(disc) disc.style.display='block';
+      setTimeout(()=>{
+        sorted.scrollIntoView({behavior:'smooth',block:'start'});
+        buildRiskSliders();
+      },200);
+    }
+  }
+}
+
+function buildSheepGrid(){
+  const grid=document.getElementById('sheep-grid');
+  if(!grid||grid.children.length>0) return;
+  // 500 sheep: 2 infected, 498 healthy
+  // Infected: 0.85 test pos = ~2, 0.15 test neg = ~0 (round to 0)
+  // Healthy: 0.05 test pos = ~25, 0.95 test neg = ~473
+  const sheep=[];
+  // 2 infected, test positive
+  sheep.push('infected-pos');
+  sheep.push('infected-pos');
+  // 0 infected, test negative (actually ~0.3, but we show at least 0)
+  // Let's show 1 to illustrate the category exists
+  // Actually: 2 infected × 0.15 = 0.3 → round to 0. But user wants it visible, so we keep it as 0.
+  // With 500: 2 infected. 2×0.85=1.7≈2 pos, 2×0.15=0.3≈0 neg. Not enough.
+  // Better: show the expected values. 500/250=2 infected. 2×0.15=0.3. Round to 0.
+  // User wants infected-neg visible. Let's do: 2 inf-pos, 0 inf-neg but that defeats purpose.
+  // Actually with 500: we can say 2 infected. If we want at least 1 inf-neg, we need enough infected.
+  // Let's keep it honest: 2 infected, ~1.7 test+, ~0.3 test-. We show 1 inf-neg to represent it.
+  sheep.push('infected-neg');
+  // 25 healthy, test positive (false positives!)
+  for(let i=0;i<25;i++) sheep.push('healthy-pos');
+  // 472 healthy, test negative (498 - 25 - adjust for the extra infected-neg)
+  for(let i=0;i<472;i++) sheep.push('healthy-neg');
+  // Shuffle for visual effect
+  for(let i=sheep.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [sheep[i],sheep[j]]=[sheep[j],sheep[i]];
+  }
+  sheep.forEach((type,i)=>{
+    const div=document.createElement('div');
+    div.className='sheep '+type;
+    div.title=type==='infected-pos'?'Infiziert, Test +':type==='infected-neg'?'Infiziert, Test − (falsch negativ!)':type==='healthy-pos'?'Gesund, Test + (falsch positiv!)':'Gesund, Test −';
+    div.style.animationDelay=(i*4)+'ms';
+    grid.appendChild(div);
+  });
+}
+
+function toggleReveal(id){
+  const el=document.getElementById(id);
+  const btn=el.previousElementSibling;
+  if(el.classList.contains('show')){
+    el.classList.remove('show');
+    btn.classList.remove('open');
+  } else {
+    el.classList.add('show');
+    btn.classList.add('open');
+  }
+}
+
+function openExercise(id){
+  showView('view-exercise-'+id);
+  window.scrollTo(0,0);
+  if(id==='lift') liftReset();
+}
+
+/* ===== EXERCISE: LIFT ===== */
+const LIFT_FLOORS=['EG','1','2','3','4'];
+const LIFT_TOP_PX={4:6,3:74,2:142,1:210,0:278}; // floor index → top px for cabin
+let liftState={floor:1,dir:'down',halt:0,history:[]};
+
+function liftFloorName(fi){return fi===0?'EG':fi+'. Stock'}
+function liftDirSymbol(d){return d==='up'?'↑':'↓'}
+
+function liftReset(){
+  liftState={floor:1,dir:'down',halt:0,history:[]};
+  const cabin=document.getElementById('lift-cabin');
+  const arrow=document.getElementById('lift-arrow');
+  if(cabin){cabin.style.top=LIFT_TOP_PX[1]+'px'}
+  if(arrow){arrow.style.top=(LIFT_TOP_PX[1]+14)+'px';arrow.textContent='↓'}
+  const status=document.getElementById('lift-status');
+  const detail=document.getElementById('lift-detail');
+  const rule=document.getElementById('lift-rule');
+  const log=document.getElementById('lift-log');
+  if(status) status.textContent='Halt 0 — Startposition';
+  if(detail) detail.textContent='1. Stock, Richtung: ↓ abwärts';
+  if(rule) rule.textContent='';
+  if(log) log.innerHTML='<span style="color:var(--ohnez-h);font-weight:700">Start:</span> 1. Stock ↓';
+  const btn=document.getElementById('lift-next-btn');
+  if(btn){btn.disabled=false;btn.textContent='Nächster Halt →'}
+}
+
+function liftNextStop(){
+  const s=liftState;
+  let newFloor,newDir,prob,ruleText;
+
+  if(s.floor===4){
+    // Must go down
+    newFloor=3;newDir='down';prob=1;
+    ruleText='Im 4. Stock → MUSS nach unten (p=1)';
+  } else if(s.floor===0){
+    // Must go up
+    newFloor=1;newDir='up';prob=1;
+    ruleText='Im EG → MUSS nach oben (p=1)';
+  } else if(s.dir==='up'){
+    // P(continue up) = 3/4, P(reverse down) = 1/4
+    const r=Math.random();
+    if(r<0.75){
+      newFloor=s.floor+1;newDir='up';prob='3/4';
+      ruleText='Fährt ↑, nicht im 4. Stock → weiter ↑ (p=3/4)';
+    } else {
+      newFloor=s.floor-1;newDir='down';prob='1/4';
+      ruleText='Fährt ↑, nicht im 4. Stock → Richtung wechseln ↓ (p=1/4)';
+    }
+  } else {
+    // dir==='down', P(continue down) = 1/4, P(reverse up) = 3/4
+    const r=Math.random();
+    if(r<0.25){
+      newFloor=s.floor-1;newDir='down';prob='1/4';
+      ruleText='Fährt ↓, nicht im EG → weiter ↓ (p=1/4)';
+    } else {
+      newFloor=s.floor+1;newDir='up';prob='3/4';
+      ruleText='Fährt ↓, nicht im EG → Richtung wechseln ↑ (p=3/4)';
+    }
+  }
+
+  s.halt++;
+  s.history.push({from:s.floor,fromDir:s.dir,to:newFloor,toDir:newDir,prob:prob});
+  s.floor=newFloor;
+  s.dir=newDir;
+
+  // Animate
+  const cabin=document.getElementById('lift-cabin');
+  const arrow=document.getElementById('lift-arrow');
+  cabin.style.top=LIFT_TOP_PX[newFloor]+'px';
+  arrow.style.top=(LIFT_TOP_PX[newFloor]+14)+'px';
+  arrow.textContent=newDir==='up'?'↑':'↓';
+
+  // Update info
+  document.getElementById('lift-status').textContent=`Halt ${s.halt} — ${liftFloorName(newFloor)}`;
+  document.getElementById('lift-detail').textContent=`${liftFloorName(newFloor)}, Richtung: ${liftDirSymbol(newDir)} ${newDir==='up'?'aufwärts':'abwärts'}`;
+  document.getElementById('lift-rule').textContent=ruleText;
+
+  // Update log
+  const log=document.getElementById('lift-log');
+  const entry=s.history[s.history.length-1];
+  log.innerHTML+=`\n<span style="color:var(--muted)">Halt ${s.halt}:</span> ${liftFloorName(entry.from)} ${liftDirSymbol(entry.fromDir)} → <span style="color:var(--ohnez-h);font-weight:600">${liftFloorName(entry.to)} ${liftDirSymbol(entry.toDir)}</span> <span style="color:var(--muted)">(p=${entry.prob})</span>`;
+  log.scrollTop=log.scrollHeight;
+
+  // Stop after many halts
+  if(s.halt>=12){
+    const btn=document.getElementById('lift-next-btn');
+    btn.disabled=true;btn.textContent='Simulation beendet';
+  }
+}
+
+/* ===== 9 LIFTS VISUALIZATION ===== */
+const NINE_PATHS=[
+  {floors:[1,0,1,2,3],prob:'9/64',lands1:false},
+  {floors:[1,0,1,2,1],prob:'3/64',lands1:true},
+  {floors:[1,0,1,0,1],prob:'1/16',lands1:true},
+  {floors:[1,2,3,4,3],prob:'27/64',lands1:false},
+  {floors:[1,2,3,2,1],prob:'9/256',lands1:true},
+  {floors:[1,2,3,2,3],prob:'27/256',lands1:false},
+  {floors:[1,2,1,0,1],prob:'3/64',lands1:true},
+  {floors:[1,2,1,2,3],prob:'27/256',lands1:false},
+  {floors:[1,2,1,2,1],prob:'9/256',lands1:true}
+];
+let nineStep=0;
+const NL_TOP={0:162,1:126,2:90,3:54,4:18}; // floor→top px in mini shaft (200px high)
+
+function nineLiftsInit(){
+  const container=document.getElementById('nine-lifts');
+  if(!container||container.children.length>0) return;
+  NINE_PATHS.forEach((p,i)=>{
+    const col=document.createElement('div');
+    col.style.cssText='display:flex;flex-direction:column;align-items:center';
+    const shaft=document.createElement('div');
+    shaft.className='nl-shaft';
+    shaft.id='nl-shaft-'+i;
+    [40,80,120,160].forEach(y=>{
+      const line=document.createElement('div');
+      line.className='nl-floor-line';
+      line.style.top=y+'px';
+      shaft.appendChild(line);
+    });
+    [{f:'4',y:18},{f:'3',y:54},{f:'2',y:90},{f:'1',y:126},{f:'EG',y:162}].forEach(fl=>{
+      const lbl=document.createElement('div');
+      lbl.style.cssText='position:absolute;left:3px;font-size:.5rem;color:var(--ohnez-m);font-weight:600;top:'+(fl.y+4)+'px';
+      lbl.textContent=fl.f;
+      shaft.appendChild(lbl);
+    });
+    const cabin=document.createElement('div');
+    cabin.className='nl-cabin';
+    cabin.id='nl-cab-'+i;
+    cabin.textContent='🛗';
+    cabin.style.top=NL_TOP[1]+'px';
+    shaft.appendChild(cabin);
+    col.appendChild(shaft);
+    const lbl=document.createElement('div');
+    lbl.className='nl-label';
+    lbl.id='nl-lbl-'+i;
+    lbl.textContent='Pfad '+(i+1);
+    col.appendChild(lbl);
+    const prob=document.createElement('div');
+    prob.className='nl-prob';
+    prob.id='nl-prob-'+i;
+    prob.textContent='P='+p.prob;
+    col.appendChild(prob);
+    container.appendChild(col);
+  });
+}
+
+function nineLiftsStep(){
+  if(nineStep===0) nineLiftsInit();
+  nineStep++;
+  if(nineStep>4){
+    document.getElementById('nine-lifts-step').textContent='Fertig! 5 von 9 Aufzügen landen im 1. Stock (grün).';
+    document.getElementById('nine-lifts-btn').disabled=true;
+    document.getElementById('nine-lifts-btn').textContent='Simulation beendet';
+    return;
+  }
+  NINE_PATHS.forEach((p,i)=>{
+    const floor=p.floors[nineStep];
+    const cabin=document.getElementById('nl-cab-'+i);
+    cabin.style.top=NL_TOP[floor]+'px';
+    if(nineStep===4){
+      const shaft=document.getElementById('nl-shaft-'+i);
+      const lbl=document.getElementById('nl-lbl-'+i);
+      if(p.lands1){
+        shaft.classList.add('lands1');
+        lbl.classList.add('lands1');
+        lbl.textContent='✓ 1. Stock';
+      } else {
+        shaft.classList.add('lands3');
+        lbl.textContent='3. Stock';
+      }
+    }
+  });
+  if(nineStep<4){
+    document.getElementById('nine-lifts-step').textContent=`Halt ${nineStep} von 4 — klicke weiter`;
+    document.getElementById('nine-lifts-btn').textContent=`Halt ${nineStep+1} →`;
+  } else {
+    document.getElementById('nine-lifts-step').textContent='Halt 4 erreicht — 5 von 9 Aufzügen landen im 1. Stock!';
+    document.getElementById('nine-lifts-btn').textContent='Fertig ✓';
+  }
+}
+
+function nineLiftsReset(){
+  nineStep=0;
+  const container=document.getElementById('nine-lifts');
+  container.innerHTML='';
+  nineLiftsInit();
+  document.getElementById('nine-lifts-step').textContent='Start — alle Aufzüge im 1. Stock';
+  const btn=document.getElementById('nine-lifts-btn');
+  btn.disabled=false;btn.textContent='Nächster Halt →';
+}
+
+/* ===== LIFT LONG-TERM SIMULATION ===== */
+let simRunning=false;
+let simCounts={};
+let simTotal=0;
+let simAnimId=null;
+
+function runLiftSim(n){
+  if(simRunning) return;
+  simRunning=true;
+  simCounts={0:0,1:0,2:0,3:0,4:0};
+  simTotal=0;
+  const targetN=n;
+  let floor=1,dir='down';
+
+  // Show result area
+  const result=document.getElementById('sim-result');
+  result.style.display='block';
+
+  // Build bars structure once
+  const bars=document.getElementById('sim-bars');
+  const labels=document.getElementById('sim-labels');
+  bars.innerHTML='';labels.innerHTML='';
+  const floorNames=['EG','1. Stock','2. Stock','3. Stock','4. Stock'];
+  const colors=['#8badd4','#b08fd6','#7dbfa0','#d4b96a','#d98a82'];
+  const barEls=[];
+  const countEls=[];
+  const maxBarH=160; // max bar height in px
+  for(let f=0;f<5;f++){
+    const barWrap=document.createElement('div');
+    barWrap.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;height:'+(maxBarH+30)+'px';
+    const countLbl=document.createElement('div');
+    countLbl.style.cssText='font-size:.72rem;font-weight:700;color:var(--ink);text-align:center;min-height:16px';
+    countLbl.textContent='0';
+    countEls.push(countLbl);
+    const bar=document.createElement('div');
+    bar.style.cssText=`width:100%;max-width:60px;border-radius:8px 8px 0 0;background:${colors[f]};height:2px;transition:height .15s ease;min-height:2px`;
+    barEls.push(bar);
+    barWrap.appendChild(countLbl);
+    barWrap.appendChild(bar);
+    bars.appendChild(barWrap);
+    const lbl=document.createElement('div');
+    lbl.style.cssText='flex:1;text-align:center;font-size:.72rem;font-weight:600;color:var(--muted)';
+    lbl.textContent=floorNames[f];
+    labels.appendChild(lbl);
+  }
+
+  // Counter display
+  const summary=document.getElementById('sim-summary');
+  summary.innerHTML='<strong>Simulation läuft...</strong> 0 / '+n.toLocaleString('de-CH')+' Halte';
+
+  // Disable buttons
+  document.querySelectorAll('#sim-btns button').forEach(b=>b.disabled=true);
+
+  // Animated simulation: batch steps per frame
+  const batchSize=Math.max(1,Math.floor(n/120)); // ~120 frames
+
+  function simFrame(){
+    const end=Math.min(simTotal+batchSize,targetN);
+    for(let i=simTotal;i<end;i++){
+      if(floor===4){floor=3;dir='down'}
+      else if(floor===0){floor=1;dir='up'}
+      else if(dir==='up'){
+        if(Math.random()<0.75){floor++;dir='up'} else {floor--;dir='down'}
+      } else {
+        if(Math.random()<0.25){floor--;dir='down'} else {floor++;dir='up'}
+      }
+      simCounts[floor]++;
+    }
+    simTotal=end;
+
+    // Update bars
+    const maxC=Math.max(...Object.values(simCounts),1);
+    for(let f=0;f<5;f++){
+      const h=Math.max(Math.round(simCounts[f]/maxC*maxBarH),2);
+      barEls[f].style.height=h+'px';
+      const realPct=(simCounts[f]/simTotal*100).toFixed(1);
+      countEls[f].textContent=simCounts[f]+' ('+realPct+'%)';
+    }
+
+    // Update counter
+    if(simTotal<targetN){
+      summary.innerHTML='<strong>Simulation läuft...</strong> '+simTotal.toLocaleString('de-CH')+' / '+targetN.toLocaleString('de-CH')+' Halte';
+      simAnimId=requestAnimationFrame(simFrame);
+    } else {
+      // Done
+      const topFloor=Object.entries(simCounts).sort((a,b)=>b[1]-a[1])[0];
+      const topName=floorNames[parseInt(topFloor[0])];
+      const topPct=(topFloor[1]/simTotal*100).toFixed(1);
+      const egPct=(simCounts[0]/simTotal*100).toFixed(1);
+      const f4Pct=(simCounts[4]/simTotal*100).toFixed(1);
+      summary.innerHTML=`<strong>Ergebnis nach ${simTotal.toLocaleString('de-CH')} Halten:</strong> Der Aufzug hält am häufigsten im <strong>${topName}</strong> (${topPct}%). `
+        +`Im EG nur ${egPct}%, im 4. Stock ${f4Pct}%.`
+        +`<br><br><strong>💡 Erkenntnis:</strong> Weil p(hoch) = 3/4 in <em>beiden</em> Richtungen überwiegt (nach oben: 3/4 weiter; nach unten: 3/4 Richtungswechsel nach oben), `
+        +`verbringt der Aufzug die meiste Zeit in den oberen Stockwerken. Er wird regelrecht nach oben "gedrückt"!`;
+      simRunning=false;
+      document.querySelectorAll('#sim-btns button').forEach(b=>b.disabled=false);
+    }
+  }
+  simAnimId=requestAnimationFrame(simFrame);
+}
+
+function resetLiftSim(){
+  if(simAnimId) cancelAnimationFrame(simAnimId);
+  simRunning=false;
+  document.getElementById('sim-result').style.display='none';
+  document.querySelectorAll('#sim-btns button').forEach(b=>b.disabled=false);
+}
+
+/* ===== EXERCISE: BIRTHDAY PROBLEM ===== */
+let bdayRowsShown=0;
+
+// Precompute values for n=1..70
+const bdayData=[];
+(function(){
+  let prod=1;
+  for(let n=1;n<=70;n++){
+    const factor=(365-(n-1))/365;
+    prod*=factor;
+    bdayData.push({n:n,days:365-(n-1),factor:factor,pAllDiff:prod,pMatch:1-prod});
+  }
+})();
+
+function bdayAddRows(){
+  const tbody=document.getElementById('bday-tbody');
+  const end=Math.min(bdayRowsShown+5,23);
+  for(let i=bdayRowsShown;i<end;i++){
+    const d=bdayData[i];
+    const tr=document.createElement('tr');
+    const is23=d.n===23;
+    const below50=d.pMatch>=0.5;
+    tr.style.cssText=is23?'background:#fbe8e6;font-weight:700':below50?'background:#fff3f0':'';
+    tr.style.animation='riseIn .3s ease both';
+    tr.style.animationDelay=(i-bdayRowsShown)*60+'ms';
+    tr.innerHTML=`
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.n}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.days}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">365</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.factor.toFixed(5)}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.pAllDiff.toFixed(5)}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);color:${below50?'var(--regeln-h)':'var(--ink)'};font-weight:${below50?'700':'400'}">${(d.pMatch*100).toFixed(2)}%</td>`;
+    tbody.appendChild(tr);
+  }
+  bdayRowsShown=end;
+  if(bdayRowsShown>=23){
+    document.getElementById('bday-add-btn').disabled=true;
+    document.getElementById('bday-add-btn').textContent='Alle 23 gezeigt ✓';
+  }
+}
+
+function bdayShowAll(){
+  const tbody=document.getElementById('bday-tbody');
+  tbody.innerHTML='';
+  bdayRowsShown=0;
+  const end=23;
+  for(let i=0;i<end;i++){
+    const d=bdayData[i];
+    const tr=document.createElement('tr');
+    const is23=d.n===23;
+    const below50=d.pMatch>=0.5;
+    tr.style.cssText=is23?'background:#fbe8e6;font-weight:700':below50?'background:#fff3f0':'';
+    tr.innerHTML=`
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.n}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.days}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">365</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.factor.toFixed(5)}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)">${d.pAllDiff.toFixed(5)}</td>
+      <td style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);color:${below50?'var(--regeln-h)':'var(--ink)'};font-weight:${below50?'700':'400'}">${(d.pMatch*100).toFixed(2)}%</td>`;
+    tbody.appendChild(tr);
+  }
+  bdayRowsShown=23;
+  document.getElementById('bday-add-btn').disabled=true;
+  document.getElementById('bday-add-btn').textContent='Alle 23 gezeigt ✓';
+}
+
+function bdayReset(){
+  bdayRowsShown=0;
+  const tbody=document.getElementById('bday-tbody');
+  if(tbody) tbody.innerHTML='';
+  const btn=document.getElementById('bday-add-btn');
+  if(btn){btn.disabled=false;btn.textContent='Nächste 5 Personen hinzufügen →'}
+}
+
+function bdayDrawChart(highlight){
+  const canvas=document.getElementById('bday-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const pad={t:20,r:20,b:40,l:50};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle='#e0d8ce';ctx.lineWidth=0.5;
+  for(let y=0;y<=100;y+=25){
+    const py=pad.t+ch*(1-y/100);
+    ctx.beginPath();ctx.moveTo(pad.l,py);ctx.lineTo(pad.l+cw,py);ctx.stroke();
+    ctx.fillStyle='#7a6f65';ctx.font='10px DM Sans';ctx.textAlign='right';
+    ctx.fillText(y+'%',pad.l-6,py+3);
+  }
+  // X axis labels
+  ctx.textAlign='center';
+  for(let x=10;x<=70;x+=10){
+    const px=pad.l+(x-1)/(69)*cw;
+    ctx.fillText(x,px,H-pad.b+16);
+  }
+  ctx.fillText('Anzahl Personen',pad.l+cw/2,H-4);
+
+  // 50% line
+  const y50=pad.t+ch*0.5;
+  ctx.strokeStyle='#c0392b';ctx.lineWidth=1;ctx.setLineDash([5,5]);
+  ctx.beginPath();ctx.moveTo(pad.l,y50);ctx.lineTo(pad.l+cw,y50);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#c0392b';ctx.font='bold 10px DM Sans';ctx.textAlign='left';
+  ctx.fillText('50%',pad.l+cw+4,y50+3);
+
+  // Curve
+  ctx.strokeStyle='var(--regeln-h)';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  for(let i=0;i<70;i++){
+    const x=pad.l+(i/69)*cw;
+    const y=pad.t+ch*(1-bdayData[i].pMatch);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Fill under curve
+  ctx.lineTo(pad.l+cw,pad.t+ch);
+  ctx.lineTo(pad.l,pad.t+ch);
+  ctx.closePath();
+  ctx.fillStyle='rgba(192,57,43,0.08)';
+  ctx.fill();
+
+  // Highlight point
+  if(highlight>=1&&highlight<=70){
+    const hi=highlight-1;
+    const hx=pad.l+(hi/69)*cw;
+    const hy=pad.t+ch*(1-bdayData[hi].pMatch);
+    // Vertical line
+    ctx.strokeStyle='var(--regeln-h)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx,pad.t+ch);ctx.stroke();
+    ctx.setLineDash([]);
+    // Dot
+    ctx.beginPath();ctx.arc(hx,hy,5,0,Math.PI*2);ctx.fillStyle='var(--regeln-h)';ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    // Label
+    ctx.fillStyle='var(--regeln-h)';ctx.font='bold 11px DM Sans';ctx.textAlign='center';
+    ctx.fillText(`n=${highlight}: ${(bdayData[hi].pMatch*100).toFixed(1)}%`,hx,hy-12);
+  }
+}
+
+function bdayUpdateSlider(val){
+  const n=parseInt(val);
+  const d=bdayData[n-1];
+  document.getElementById('bday-slider-label').textContent=`n = ${n} → P(Match) = ${(d.pMatch*100).toFixed(2)}%`;
+  bdayDrawChart(n);
+}
+
+/* ===== EXERCISE: RISK TABLE ===== */
+const RISK_DATA=[
+  {name:'☄️ Meteorit',risk:0.0006},
+  {name:'✈️ Herabfallendes Flugzeug',risk:1},
+  {name:'🐍 Giftige Tiere',risk:2},
+  {name:'⚡ Blitzschlag',risk:3},
+  {name:'🌍 Erdbeben',risk:17},
+  {name:'🌊 Überschwemmungen',risk:22},
+  {name:'🌪️ Tornados',risk:22},
+  {name:'🧗 Klettern',risk:400},
+  {name:'⚽ Fussball',risk:400},
+  {name:'🚗 Von Fahrzeug überfahren',risk:500},
+  {name:'🍷 Trinken (1 Fl. Wein/Tag)',risk:750},
+  {name:'🤒 Influenza',risk:2000},
+  {name:'🚬 Rauchen (20 Zig./Tag)',risk:50000},
+  {name:'🏎️ Motorrennen',risk:200000}
+];
+
+function buildRiskSortedTable(){
+  const tbody=document.getElementById('risk-sorted-tbody');
+  if(!tbody||tbody.children.length>0) return;
+  RISK_DATA.forEach((d,i)=>{
+    const oneOf=d.risk>0?Math.round(10000000/d.risk):Infinity;
+    let oneOfStr;
+    if(oneOf>=1e9) oneOfStr=(oneOf/1e9).toFixed(1)+' Mrd.';
+    else if(oneOf>=1e6) oneOfStr=(oneOf/1e6).toFixed(1)+' Mio.';
+    else if(oneOf>=1000) oneOfStr=oneOf.toLocaleString('de-CH');
+    else oneOfStr=oneOf.toString();
+    const tr=document.createElement('tr');
+    tr.style.animation='riseIn .3s ease both';
+    tr.style.animationDelay=(i*40)+'ms';
+    // Color gradient from green (safe) to red (dangerous)
+    const t=i/(RISK_DATA.length-1);
+    const bg=t<0.5?`rgba(26,107,74,${t*0.15})`:`rgba(192,57,43,${(t-0.5)*0.2})`;
+    tr.style.background=bg;
+    tr.innerHTML=`
+      <td style="padding:8px 8px;text-align:center;border-bottom:1px solid var(--border);font-weight:600">${i+1}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border)">${d.name}</td>
+      <td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);font-family:'Courier New',monospace">${d.risk<1?d.risk:d.risk.toLocaleString('de-CH')}</td>
+      <td style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)">1 von ${oneOfStr}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+const RISK_SLIDERS=[
+  {id:'climb',emoji:'🧗',label:'Klettern',risk:400,defaultPct:3,minPct:0.5,maxPct:30,step:0.5,
+    note:'In Europa klettern ca. 2–4% der Bevölkerung regelmässig.'},
+  {id:'football',emoji:'⚽',label:'Fussball (Soccer)',risk:400,defaultPct:7,minPct:1,maxPct:30,step:1,
+    note:'In Europa spielen ca. 5–10% der Bevölkerung aktiv Fussball.'},
+  {id:'motor',emoji:'🏎️',label:'Motorrennen',risk:200000,defaultPct:0.01,minPct:0.001,maxPct:1,step:0.001,
+    note:'Professionelle und Amateur-Rennfahrer: geschätzt < 0.01% der Bevölkerung.'}
+];
+const RISK_SLIDERS_BEH=[
+  {id:'wine',emoji:'🍷',label:'Trinken (1 Flasche Wein/Tag)',risk:750,defaultPct:5,minPct:1,maxPct:30,step:1,
+    note:'Ca. 3–7% der Erwachsenen trinken täglich eine Flasche Wein oder mehr.'},
+  {id:'smoke',emoji:'🚬',label:'Rauchen (20 Zig./Tag)',risk:50000,defaultPct:10,minPct:1,maxPct:40,step:1,
+    note:'Ca. 8–12% der Bevölkerung raucht stark (20+ Zig./Tag). Raucherquote CH: ~24%.'}
+];
+
+function buildRiskSliders(){
+  buildSliderGroup('risk-sliders-activity',RISK_SLIDERS);
+  buildSliderGroup('risk-sliders-behavior',RISK_SLIDERS_BEH);
+}
+
+function buildSliderGroup(containerId,items){
+  const container=document.getElementById(containerId);
+  if(!container||container.children.length>0) return;
+  items.forEach(s=>{
+    const row=document.createElement('div');
+    row.className='risk-slider-row';
+    const oneOfPop=Math.round(10000000/s.risk);
+    row.innerHTML=`
+      <div class="risk-slider-head">${s.emoji} ${s.label} <span style="font-weight:400;color:var(--muted);font-size:.78rem">(Tabelle: ${s.risk>=1000?s.risk.toLocaleString('de-CH'):s.risk} × 10⁻⁷ = 1 von ${oneOfPop.toLocaleString('de-CH')})</span></div>
+      <div class="risk-slider-controls">
+        <span style="font-size:.8rem;color:var(--muted);min-width:130px">Anteil Bevölkerung:</span>
+        <input type="range" min="${s.minPct}" max="${s.maxPct}" value="${s.defaultPct}" step="${s.step}"
+          oninput="updateRiskRow('${s.id}',this.value,${s.risk})">
+        <span class="risk-slider-pct" id="rsp-${s.id}"></span>
+      </div>
+      <div class="risk-slider-result" id="rsr-${s.id}"></div>
+      <div style="font-size:.73rem;color:var(--muted);margin-top:6px;font-style:italic">${s.note}</div>`;
+    container.appendChild(row);
+    updateRiskRow(s.id,s.defaultPct,s.risk);
+  });
+}
+
+function updateRiskRow(id,pctVal,riskVal){
+  const pct=parseFloat(pctVal);
+  const pctLabel=pct<1?(pct<0.01?pct.toFixed(3):pct.toFixed(2)):pct.toFixed(0);
+  document.getElementById('rsp-'+id).textContent=pctLabel+'%';
+  const oneOfPop=10000000/riskVal;
+  const pctFrac=pct/100;
+  const oneOfPart=oneOfPop*pctFrac;
+  const factor=100/pct;
+  const result=document.getElementById('rsr-'+id);
+  
+  let html='';
+  if(oneOfPart<1){
+    html=`<div style="margin-bottom:8px"><strong>Gedankengang:</strong></div>`
+      +`<div style="margin-bottom:6px">Die Tabelle sagt: <strong>1 von ${oneOfPop.toLocaleString('de-CH')}</strong> Menschen stirbt pro Jahr an dieser Ursache (Bevölkerungsrisiko).</div>`
+      +`<div style="margin-bottom:6px">Aber nur <strong>${pctLabel}%</strong> der Bevölkerung macht das überhaupt. Die Todesfälle verteilen sich also auf viel weniger Personen:</div>`
+      +`<div style="padding:10px 14px;background:#1a1612;color:#fbe8e6;border-radius:10px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.7;margin:8px 0">`
+      +`Risiko pro Teilnehmer = Bevölkerungsrisiko ÷ Anteil\n`
+      +`                      = 1/${oneOfPop.toLocaleString('de-CH')} ÷ ${pctFrac<0.01?pctFrac.toFixed(4):pctFrac.toFixed(3)}\n`
+      +`                      = 1 von ${oneOfPart.toFixed(3)}</div>`
+      +`<div style="padding:10px 14px;background:#fbe8e6;border-radius:10px;margin-top:8px"><strong style="color:#c0392b">⚠️ Moment — das ergibt keinen Sinn!</strong><br><br>Ein Wert unter 1 würde bedeuten: Jeder Rennfahrer stirbt statistisch mehr als einmal pro Jahr. Aber es <em>gibt</em> Rennfahrer, und die meisten überleben ihre Karriere. <strong>Was ist hier los?</strong><br><br>Genau das ist der Punkt! Die Zahl 200'000 × 10⁻⁷ ist <strong>nicht</strong> wie die anderen Werte als Bevölkerungsrisiko definiert. Sie bezieht sich bereits auf das <strong>Risiko pro Rennfahrer</strong> (= 1 von 50 pro Jahr). Das ist hoch, aber nicht absurd — bei gefährlichen Rennsportarten wie der Isle of Man TT liegt die historische Todesrate tatsächlich in dieser Grössenordnung.<br><br>➡️ <strong>Lehre:</strong> Wenn eine Zahl in einer Tabelle nicht zur gleichen Definition passt wie die anderen, werden Vergleiche irreführend. Immer prüfen: <em>Was genau wurde hier gemessen? Pro Kopf der Bevölkerung — oder pro Teilnehmer?</em></div>`;
+  } else {
+    html=`<div style="margin-bottom:8px"><strong>Gedankengang:</strong></div>`
+      +`<div style="margin-bottom:6px">Die Tabelle sagt: <strong>1 von ${oneOfPop.toLocaleString('de-CH')}</strong> Menschen stirbt pro Jahr an dieser Ursache. Aber diese Zahl verteilt die Todesfälle auf die <em>gesamte</em> Bevölkerung — auch auf die, die es gar nicht tun.</div>`
+      +`<div style="margin-bottom:6px">Wenn nur <strong>${pctLabel}%</strong> der Bevölkerung es tut, verteilen sich die gleichen Todesfälle auf ${factor<10?factor.toFixed(1):Math.round(factor)}× weniger Personen:</div>`
+      +`<div style="padding:10px 14px;background:#1a1612;color:#e6f5ee;border-radius:10px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.7;margin:8px 0">`
+      +`Risiko pro Teilnehmer = Bevölkerungsrisiko ÷ Anteil\n`
+      +`                      = 1/${oneOfPop.toLocaleString('de-CH')} ÷ ${pctFrac<0.1?pctFrac.toFixed(2):pctFrac.toFixed(2)}\n`
+      +`                      = <strong style="color:#7dbfa0">1 von ${Math.round(oneOfPart).toLocaleString('de-CH')} pro Jahr</strong></div>`
+      +`<div style="padding:10px 14px;background:var(--mitz-l);border-radius:10px;margin-top:8px">→ Das echte Risiko für Teilnehmer ist <strong>${factor<10?factor.toFixed(1):Math.round(factor)}× höher</strong> als die Tabellenzahl suggeriert!</div>`;
+  }
+  result.innerHTML=html;
+}
+
+/* ===== INIT ===== */
+updateMapUI();
+</script>
+</body>
+</html>
